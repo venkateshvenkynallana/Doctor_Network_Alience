@@ -187,7 +187,7 @@ const LoginPage = () => {
                             <h2>Doctors Alliance Network</h2>
                             <p>Transforming Healthcare Collaboration</p>
                         </div>
-                    </div>
+                    </div> 
                 </div>
                 <div className="login-popup-content">
                     <div className="login-popup-left">

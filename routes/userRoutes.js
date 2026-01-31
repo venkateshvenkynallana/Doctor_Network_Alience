@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
@@ -47,3 +48,24 @@ router.get('/profile', protect, getProfile);
 router.get('/profile/:userId', getProfile); // Public profile view
 
 module.exports = router;
+=======
+import express from "express";
+import { checkAuth, forgotPassword, Login, resetPassword, signUp, updateProfile, verifyOtp } from "../controller/userController.js";
+import { protectRoute } from "../middleware/auth.js";
+import { uploadMulter } from "../middleware/multer.js";
+
+const userRouter = express.Router();
+
+//user routes 
+userRouter.post("/signup", signUp);
+userRouter.post("/login", Login);
+userRouter.put("/update-profile", protectRoute, uploadMulter.single("profilepic"), updateProfile);
+userRouter.get("/check", protectRoute, checkAuth);
+ 
+//reset password routes
+userRouter.post("/forget-password", forgotPassword);
+userRouter.post("/verify-otp", verifyOtp);
+userRouter.post("/reset-password", resetPassword)
+
+export default userRouter;
+>>>>>>> 02e8f542f6d756f6b93a56aaab54a54acddf26b1
