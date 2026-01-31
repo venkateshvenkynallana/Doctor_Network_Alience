@@ -1,0 +1,540 @@
+.network-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.network-header {
+  margin-bottom: 32px;
+}
+
+.network-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.network-subtitle {
+  font-size: 16px;
+  color: #6b7280;
+}
+
+.network-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.network-search {
+  position: relative;
+  flex: 1;
+  max-width: 400px;
+}
+
+.network-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: #9ca3af;
+}
+
+.network-search-input {
+  width: 100%;
+  padding: 12px 16px 12px 44px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.network-search-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.network-filters {
+  display: flex;
+  gap: 12px;
+}
+
+.network-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.network-filter-btn:hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.network-filter-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.network-tabs {
+  display: flex;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+
+.network-tab {
+  padding: 12px 24px;
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+
+.network-tab:hover {
+  color: #374151;
+}
+
+.network-tab.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+}
+
+.network-content {
+  min-height: 400px;
+}
+
+/* Network Grid for Connections and Find Doctors */
+.network-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.network-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.2s ease;
+}
+
+.network-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.network-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.network-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.network-avatar-icon {
+  width: 30px;
+  height: 30px;
+  color: white;
+}
+
+.network-info {
+  flex: 1;
+}
+
+.network-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.network-specialty {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 12px;
+}
+
+.network-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.network-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.network-meta-icon {
+  width: 14px;
+  height: 14px;
+  color: #9ca3af;
+}
+
+.network-meta-item span {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.network-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.network-rating-icon {
+  width: 16px;
+  height: 16px;
+  color: #f59e0b;
+}
+
+.network-rating span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.network-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.network-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  flex: 1;
+  justify-content: center;
+}
+
+.network-btn.connect {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.network-btn.connect:hover {
+  background-color: #2563eb;
+}
+
+.network-btn.message {
+  background-color: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.network-btn.message:hover {
+  background-color: #e5e7eb;
+}
+
+.network-btn.pending {
+  background-color: #fef3c7;
+  color: #92400e;
+  cursor: not-allowed;
+}
+
+/* Groups List */
+.groups-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.group-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.2s ease;
+}
+
+.group-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.group-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.group-info {
+  flex: 1;
+}
+
+.group-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.group-description {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.group-stats {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.group-members {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.group-category {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 12px;
+  text-transform: capitalize;
+}
+
+.group-category.professional {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.group-category.specialty {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.group-category.innovation {
+  background-color: #ede9fe;
+  color: #5b21b6;
+}
+
+.group-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.group-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.group-btn.join {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.group-btn.join:hover {
+  background-color: #2563eb;
+}
+
+.group-btn.joined {
+  background-color: #d1fae5;
+  color: #065f46;
+  cursor: default;
+}
+
+/* Messages List */
+.messages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.message-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.2s ease;
+  display: flex;
+  gap: 12px;
+}
+
+.message-card:hover {
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+}
+
+.message-card.unread {
+  background-color: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.message-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.message-avatar-icon {
+  width: 20px;
+  height: 20px;
+  color: white;
+}
+
+.message-content {
+  flex: 1;
+}
+
+.message-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.message-sender {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.message-time {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.message-subject {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.message-preview {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.message-actions {
+  display: flex;
+  align-items: center;
+}
+
+.message-btn {
+  padding: 6px 12px;
+  background-color: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.message-btn:hover {
+  background-color: #e5e7eb;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .network-container {
+    padding: 16px;
+  }
+  
+  .network-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .network-search {
+    max-width: none;
+  }
+  
+  .network-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .network-header {
+    margin-bottom: 24px;
+  }
+  
+  .network-title {
+    font-size: 24px;
+  }
+  
+  .group-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .group-stats {
+    text-align: left;
+  }
+  
+  .message-card {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .message-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+
+@media (max-width: 640px) {
+  .network-tabs {
+    gap: 8px;
+  }
+  
+  .network-tab {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}

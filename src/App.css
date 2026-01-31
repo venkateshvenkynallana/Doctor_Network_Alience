@@ -1,0 +1,26 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--white);
+    min-height: 100vh;
+    color: var(--black-dark);
+}
+
+#root {
+    min-height: 100vh;
+}
+
+.user-welcome {
+    color: #000000;
+    font-weight: 600;
+    margin-right: 15px;
+    padding: 8px 15px;
+    background: rgba(220, 38, 38, 0.1);
+    border-radius: 20px;
+    font-size: 0.9em;
+}
