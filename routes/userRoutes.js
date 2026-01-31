@@ -1,13 +1,14 @@
 import express from "express";
 import { checkAuth, forgotPassword, Login, resetPassword, signUp, updateProfile, verifyOtp } from "../controller/userController.js";
 import { protectRoute } from "../middleware/auth.js";
+import { uploadMulter } from "../middleware/multer.js";
 
 const userRouter = express.Router();
 
 //user routes 
 userRouter.post("/signup", signUp);
 userRouter.post("/login", Login);
-userRouter.put("/update-profile", protectRoute, updateProfile);
+userRouter.put("/update-profile", protectRoute, uploadMulter.single("profilepic"), updateProfile);
 userRouter.get("/check", protectRoute, checkAuth);
  
 //reset password routes

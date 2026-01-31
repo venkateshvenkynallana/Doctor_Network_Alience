@@ -6,12 +6,12 @@ import transporter from "../lib/mailer.js";
 
 
 //Sign up form
-export const signUp = async (req, res) => { 
+export const signUp = async (req, res) => {
 
-    const { fullName, email, password, bio, number } = req.body;
+    const { fullName, email, password, bio, phoneNo, designation } = req.body;
 
     try {
-        if (!fullName || !email || !password || !number) {
+        if (!fullName || !email || !password || !phoneNo || !designation) {
             return res.status(400).json({ message: "fields are missing." });
         }
 
@@ -31,7 +31,8 @@ export const signUp = async (req, res) => {
             email,
             password: hashedPassword,
             bio,
-            number
+            phoneNo,
+            designation,
         });
 
         const token = generateToken(newUser._id);
@@ -76,30 +77,85 @@ export const checkAuth = async (req, res) => {
 //controller update user profile details
 export const updateProfile = async (req, res) => {
     try {
-        const { profilepic, fullName, bio, number } = req.body;
-
         const userId = req.user._id;
 
-        let updatedUser;
+        const {
+            fullName,
+            bio,
+            phoneNo,
+            designation,
+            profile
+        } = req.body || {}; // ✅ prevent crash
 
-        if (!profilepic) {
-            updatedUser = await User.findByIdAndUpdate(userId, { bio, fullName, number }, { new: true });
-        } else {
-            const upload = await cloudinary.uploader.upload(profilepic);
+        const updateData = {};
 
-            updatedUser = await User.findByIdAndUpdate(userId, {
-                profilepic: upload.secure_url,
-                fullName,
-                bio,
-                number
-            }, { new: true });
-            res.status(200).json({ success: true, updatedUser, message: "updated successfully." });
+        // ===== basic fields =====
+        if (fullName) updateData.fullName = fullName;
+        if (bio) updateData.bio = bio;
+        if (phoneNo) updateData.phoneNo = phoneNo;
+        if (designation) updateData.designation = designation;
+
+        // ===== nested profile =====
+        if (profile) {
+            const parsedProfile =
+                typeof profile === "string" ? JSON.parse(profile) : profile;
+
+            if (parsedProfile.professionalHeadline)
+                updateData["profile.professionalHeadline"] =
+                    parsedProfile.professionalHeadline;
+
+            if (parsedProfile.skills)
+                updateData["profile.skills"] = parsedProfile.skills;
+
+            if (parsedProfile.experience) {
+                Object.entries(parsedProfile.experience).forEach(([key, value]) => {
+                    if (value)
+                        updateData[`profile.experience.${key}`] = value;
+                });
+            }
+
+            if (parsedProfile.education) {
+                Object.entries(parsedProfile.education).forEach(([key, value]) => {
+                    if (value)
+                        updateData[`profile.education.${key}`] = value;
+                });
+            }
+
+            if (parsedProfile.certifications) {
+                Object.entries(parsedProfile.certifications).forEach(([key, value]) => {
+                    if (value)
+                        updateData[`profile.certifications.${key}`] = value;
+                });
+            }
         }
+
+        // ===== image upload via multer =====
+        if (req.file) {
+            const uploadResult = await cloudinary.uploader.upload(
+                `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`
+            );
+            updateData.profilepic = uploadResult.secure_url;
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
+
+        res.status(200).json({
+            success: true,
+            updatedUser,
+            message: "Profile updated successfully"
+        });
+
     } catch (error) {
-        console.log("update profile error", error);
-        res.status(200).json({ message: error.message });
+        console.error("update profile error", error);
+        res.status(500).json({ message: error.message });
     }
-}
+};
+
+
 
 //controller to handle forgot password
 export const forgotPassword = async (req, res) => {
