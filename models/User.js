@@ -59,7 +59,16 @@ const userSchema = new mongoose.Schema({
             name: { type: String, default: "" },
             issuingOrganization: { type: String, default: "" },
             validUntil: { type: String, default: "" }
-        }
+        },
+        professionalInterests: {
+            type: [String],
+            default: []
+        },
+        achievements: [{
+            title: { type: String, default: "" },
+            organization: { type: String, default: "" },
+            date: { type: String, default: "" }
+        }]
     },
     //otp for reset password
     resetOtp: Number,
