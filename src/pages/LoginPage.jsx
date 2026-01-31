@@ -193,11 +193,11 @@ const LoginPage = () => {
                     <div className="login-popup-left">
                         <div className="login-welcome-section">
                             <h3>Welcome Back</h3>
-                            <p>Access your medical network and connect with healthcare professionals worldwide</p>
+                            <p>Access your doctor network and connect with healthcare professionals worldwide</p>
                             <div className="login-features-list">
                                 <div className="login-feature-item">
                                     <span className="feature-icon">🏥</span>
-                                    <span>Connect with Medical Professionals</span>
+                                    <span>Connect with Doctor Professionals</span>
                                 </div>
                                 <div className="login-feature-item">
                                     <span className="feature-icon">🤝</span>

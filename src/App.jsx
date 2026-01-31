@@ -1,16 +1,17 @@
-import React, { useState, useContext } from 'react';
-import { AuthContext } from './context/AuthContext';
+import React, { useState } from 'react';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import LandingPage from './components/LandingPage';
 import Register from './components/Register';
 import Login from './components/Login';
-import Dashboard from './components/Dashboard';
+import Dashboard from './components/doctorDashboard/Dashboard/Dashboard';
 import DNA_logo_copy from './assets/DNA logo copy.jpg.jpeg';
 import './App.css';
 
 function App() {
     const [showRegisterForm, setShowRegisterForm] = useState(false);
     const [showLoginForm, setShowLoginForm] = useState(false);
-    const { authUser, login, register, logout } = useContext(AuthContext);
 
     const handleLogin = () => {
         setShowLoginForm(true);
@@ -28,18 +29,51 @@ function App() {
         setShowLoginForm(false);
     };
 
+    return (
+        <AuthProvider>
+            <AppContent 
+                showRegisterForm={showRegisterForm}
+                showLoginForm={showLoginForm}
+                onLogin={handleLogin}
+                onRegister={handleRegister}
+                onCloseRegister={handleCloseRegister}
+                onCloseLogin={handleCloseLogin}
+            />
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+            />
+        </AuthProvider>
+    );
+}
+
+function AppContent({ showRegisterForm, showLoginForm, onLogin, onRegister, onCloseRegister, onCloseLogin }) {
+    const { user, login, register, logout } = useAuth();
+
     const handleLoginSuccess = async (credentials, action = 'login') => {
+        console.log('handleLoginSuccess called with:', credentials, action);
         try {
             if (action === 'register') {
+                console.log('Calling register function...');
                 await register(credentials);
                 // Don't automatically log in after registration
                 // Just show the login page
             } else {
+                console.log('Calling login function...');
                 await login(credentials);
             }
-            setShowLoginForm(false);
-            setShowRegisterForm(false);
+            onCloseLogin();
+            onCloseRegister();
         } catch (error) {
+            console.error('Login/Registration error:', error);
             // Error is handled by the AuthContext with toast notifications
         }
     };
@@ -48,26 +82,26 @@ function App() {
         await logout();
     };
 
-    if (authUser) {
+    if (user) {
         return <Dashboard />;
     }
 
     return (
         <div>
-            <LandingPage onLogin={handleLogin} onRegister={handleRegister} />
+            <LandingPage onLogin={onLogin} onRegister={onRegister} />
             
             {showRegisterForm && (
                 <Register 
-                    onClose={handleCloseRegister} 
-                    onLogin={handleLogin}
+                    onClose={onCloseRegister} 
+                    onLogin={onLogin}
                     onLoginSuccess={handleLoginSuccess}
                 />
             )}
             
             {showLoginForm && (
                 <Login 
-                    onClose={handleCloseLogin} 
-                    onRegister={handleRegister}
+                    onClose={onCloseLogin} 
+                    onRegister={onRegister}
                     onLoginSuccess={handleLoginSuccess}
                 />
             )}
