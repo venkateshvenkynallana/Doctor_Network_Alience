@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './Register.css';
 
-const Register = ({ onClose, onLogin }) => {
+const Register = ({ onClose, onLogin, onLoginSuccess }) => {
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
@@ -9,9 +9,10 @@ const Register = ({ onClose, onLogin }) => {
         confirmPassword: '',
         phoneNo: '',
         designation: '',
-        specialization: ''
+  
     });
     const [formErrors, setFormErrors] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -63,34 +64,26 @@ const Register = ({ onClose, onLogin }) => {
             errors.designation = 'Designation is required';
         }
 
-        if (!formData.specialization.trim()) {
-            errors.specialization = 'Specialization is required';
-        }
+       
 
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (validateForm()) {
-            // Save user to registered users list
-            const newUser = {
-                fullName: formData.fullName,
-                email: formData.email,
-                password: formData.password,
-                phoneNo: formData.phoneNo,
-                designation: formData.designation,
-                specialization: formData.specialization
-            };
-            
-            // Get existing users from localStorage or initialize empty array
-            const existingUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-            existingUsers.push(newUser);
-            localStorage.setItem('registeredUsers', JSON.stringify(existingUsers));
-
-            alert('Registration successful! Welcome to Doctors Alliance Network.');
-            handleCloseForm();
+            setIsLoading(true);
+            try {
+                await onLoginSuccess(formData, 'register');
+                // After successful registration, navigate to login page
+                handleCloseForm();
+                onLogin();
+            } catch (error) {
+                // Error is handled by the AuthContext with toast notifications
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
 
@@ -102,7 +95,7 @@ const Register = ({ onClose, onLogin }) => {
             confirmPassword: '',
             phoneNo: '',
             designation: '',
-            specialization: ''
+
         });
         setFormErrors({});
         onClose();
@@ -197,27 +190,14 @@ const Register = ({ onClose, onLogin }) => {
                         </div>
                     </div>
 
-                    <div className="form-row">
-                        <div className="form-group full-width">
-                            <label>Specialization *</label>
-                            <input
-                                type="text"
-                                name="specialization"
-                                value={formData.specialization}
-                                onChange={handleInputChange}
-                                className={formErrors.specialization ? 'error' : ''}
-                                placeholder="your specialization"
-                            />
-                            {formErrors.specialization && <span className="error-message">{formErrors.specialization}</span>}
-                        </div>
-                    </div>
+                    
 
                     <div className="form-actions">
                         <button type="button" className="btn-cancel" onClick={handleCloseForm}>
                             Cancel
                         </button>
-                        <button type="submit" className="btn-submit">
-                            Register
+                        <button type="submit" className="btn-submit" disabled={isLoading}>
+                            {isLoading ? 'Registering...' : 'Register'}
                         </button>
                     </div>
                     <div className="login-link">

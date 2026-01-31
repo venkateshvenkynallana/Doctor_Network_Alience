@@ -203,6 +203,11 @@
     transition: all 0.3s ease;
     background: #fafbfc;
     font-weight: 500;
+    color: #000000;
+}
+
+.login-popup-form-inner input::placeholder {
+    color: #666666;
 }
 
 .login-popup-form-inner input:focus {
@@ -455,6 +460,11 @@
     transition: all 0.3s ease;
     background: #fafbfc;
     font-weight: 500;
+    color: #000000;
+}
+
+.forgot-password-form-inner input::placeholder {
+    color: #666666;
 }
 
 .forgot-password-form-inner input:focus {

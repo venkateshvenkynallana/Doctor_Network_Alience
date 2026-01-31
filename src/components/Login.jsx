@@ -1,6 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import React, { useState } from 'react';
 import Register from '../components/Register';
 import DNA_logo_copy from '../assets/DNA logo copy.jpg.jpeg';
 import './Login.css';
@@ -15,13 +13,7 @@ const Login = ({ onClose, onRegister, onLoginSuccess }) => {
     });
     const [loginErrors, setLoginErrors] = useState({});
     const [showForgotPassword, setShowForgotPassword] = useState(false);
-    const [registeredUsers, setRegisteredUsers] = useState([]);
-
-    useEffect(() => {
-        // Load registered users from localStorage
-        const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-        setRegisteredUsers(users);
-    }, []);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleLoginInputChange = (e) => {
         const { name, value } = e.target;
@@ -73,22 +65,18 @@ const Login = ({ onClose, onRegister, onLoginSuccess }) => {
         return Object.keys(errors).length === 0;
     };
 
-    const handleLoginSubmit = (e) => {
+    const handleLoginSubmit = async (e) => {
         e.preventDefault();
         if (validateLogin()) {
-            // Check if user exists in registered users
-            const user = registeredUsers.find(u =>
-                u.email === loginData.email && u.password === loginData.password
-            );
-
-            if (user) {
-                onLoginSuccess(user);
-                alert(`Welcome back, Dr. ${user.fullName}!`);
-                handleCloseLogin();
-            } else {
+            setIsLoading(true);
+            try {
+                await onLoginSuccess(loginData, 'login');
+            } catch (error) {
                 setLoginErrors({
-                    general: 'Invalid email or password. Please check your credentials or register first.'
+                    general: 'Invalid email or password. Please check your credentials.'
                 });
+            } finally {
+                setIsLoading(false);
             }
         }
     };
@@ -105,14 +93,8 @@ const Login = ({ onClose, onRegister, onLoginSuccess }) => {
     const handleForgotPasswordSubmit = (e) => {
         e.preventDefault();
         if (validateForgotPassword()) {
-            // Check if email exists in registered users
-            const user = registeredUsers.find(u => u.email === forgotPasswordData.email);
-            if (user) {
-                alert(`Password reset link has been sent to ${forgotPasswordData.email}`);
-                handleCloseForgotPassword();
-            } else {
-                alert('This email is not registered. Please check your email or register first.');
-            }
+            alert(`Password reset link has been sent to ${forgotPasswordData.email}`);
+            handleCloseForgotPassword();
         }
     };
 
@@ -245,8 +227,8 @@ const Login = ({ onClose, onRegister, onLoginSuccess }) => {
                                 <a href="#" className="forgot-link" onClick={(e) => { e.preventDefault(); handleForgotPassword(); }}>Forgot Password?</a>
                             </div>
                             
-                            <button type="submit" className="login-submit-btn">
-                                Login to Network
+                            <button type="submit" className="login-submit-btn" disabled={isLoading}>
+                                {isLoading ? 'Logging in...' : 'Login to Network'}
                             </button>
                             
                             <div className="new-user-link">

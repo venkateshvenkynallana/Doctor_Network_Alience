@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { AuthContext } from './context/AuthContext';
 import LandingPage from './components/LandingPage';
 import Register from './components/Register';
 import Login from './components/Login';
+import Dashboard from './components/Dashboard';
 import DNA_logo_copy from './assets/DNA logo copy.jpg.jpeg';
 import './App.css';
 
 function App() {
     const [showRegisterForm, setShowRegisterForm] = useState(false);
     const [showLoginForm, setShowLoginForm] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [currentUser, setCurrentUser] = useState(null);
+    const { authUser, login, register, logout } = useContext(AuthContext);
 
     const handleLogin = () => {
         setShowLoginForm(true);
@@ -27,54 +28,28 @@ function App() {
         setShowLoginForm(false);
     };
 
-    const handleLoginSuccess = (user) => {
-        setCurrentUser(user);
-        setIsLoggedIn(true);
+    const handleLoginSuccess = async (credentials, action = 'login') => {
+        try {
+            if (action === 'register') {
+                await register(credentials);
+                // Don't automatically log in after registration
+                // Just show the login page
+            } else {
+                await login(credentials);
+            }
+            setShowLoginForm(false);
+            setShowRegisterForm(false);
+        } catch (error) {
+            // Error is handled by the AuthContext with toast notifications
+        }
     };
 
-    const handleLogout = () => {
-        setIsLoggedIn(false);
-        setCurrentUser(null);
-        alert('You have been logged out successfully.');
+    const handleLogout = async () => {
+        await logout();
     };
 
-    if (isLoggedIn) {
-        return (
-            <div>
-                <header className="header">
-                    <div className="nav-container">
-                        <div className="logo-section">
-                            <img
-                                src={DNA_logo_copy}
-                                alt="Doctors Alliance Network Logo"
-                                className="logo-img"
-                            />
-                            <div className="logo-text">Doctors Alliance Network</div>
-                        </div>
-                        <div className="nav-buttons">
-                            <span className="user-welcome">Welcome, Dr. {currentUser?.fullName || 'User'}</span>
-                            <button className="btn btn-login" onClick={handleLogout}>
-                                Logout
-                            </button>
-                        </div>
-                        
-                    </div>
-                </header>
-                <main className="main-content">
-                    <div style={{ textAlign: 'center', padding: '100px 20px' }}>
-                        <h1 style={{ fontSize: '2.5em', marginBottom: '20px' }}>
-                            Welcome to Your Dashboard
-                        </h1>
-                        <p style={{ fontSize: '1.2em', color: '#666' }}>
-                            Dr. {currentUser?.fullName}, you are now logged in to the Doctors Alliance Network.
-                        </p>
-                        <p style={{ fontSize: '1em', color: '#888', marginTop: '10px' }}>
-                            Dashboard features will be implemented here.
-                        </p>
-                    </div>
-                </main>
-            </div>
-        );
+    if (authUser) {
+        return <Dashboard />;
     }
 
     return (
@@ -85,6 +60,7 @@ function App() {
                 <Register 
                     onClose={handleCloseRegister} 
                     onLogin={handleLogin}
+                    onLoginSuccess={handleLoginSuccess}
                 />
             )}
             
