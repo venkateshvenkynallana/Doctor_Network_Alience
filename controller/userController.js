@@ -81,6 +81,7 @@ export const updateProfile = async (req, res) => {
 
         const {
             fullName,
+            email,
             bio,
             phoneNo,
             designation,
@@ -91,6 +92,7 @@ export const updateProfile = async (req, res) => {
 
         // ===== basic fields =====
         if (fullName) updateData.fullName = fullName;
+        if (email) updateData.email = email;
         if (bio) updateData.bio = bio;
         if (phoneNo) updateData.phoneNo = phoneNo;
         if (designation) updateData.designation = designation;
@@ -127,6 +129,12 @@ export const updateProfile = async (req, res) => {
                         updateData[`profile.certifications.${key}`] = value;
                 });
             }
+
+            if (parsedProfile.professionalInterests)
+                updateData["profile.professionalInterests"] = parsedProfile.professionalInterests;
+
+            if (parsedProfile.achievements)
+                updateData["profile.achievements"] = parsedProfile.achievements;
         }
 
         // ===== image upload via multer =====
