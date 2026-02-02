@@ -9,6 +9,7 @@ import Past from '../Events/Past/Past';
 import Network from '../Network/Network';
 import Settings from '../Settings/Settings';
 import Profile from '../Settings/Profile/Profile';
+import ViewProfile from '../Settings/Profile/ViewProfile';
 import Privacy from '../Settings/Privacy/Privacy';
 import Notifications from '../Settings/Notifications/Notifications';
 import Security from '../Settings/Security/Security';
@@ -220,7 +221,8 @@ const Dashboard = () => {
           {activeMenuItem === 'Network > Groups' && <Network />}
           {activeMenuItem === 'Network > Messages' && <Network />}
           {activeMenuItem === 'Settings' && <Settings />}
-          {activeMenuItem === 'Settings > Profile' && <Profile />}
+          {activeMenuItem === 'Settings > Profile' && <Profile onMenuClick={handleMenuClick} />}
+          {activeMenuItem === 'Settings > View Profile' && <ViewProfile onMenuClick={handleMenuClick} />}
           {activeMenuItem === 'Settings > Privacy' && <Privacy />}
           {activeMenuItem === 'Settings > Notifications' && <Notifications />}
           {activeMenuItem === 'Settings > Security' && <Security />}

@@ -102,25 +102,25 @@ const NavigationMenu = ({ activeItem = 'Dashboard', onItemClick }) => {
                   }}
                   className={`navigation-main-item ${
                     isActive(item.name) ? 'active' : ''
-                  }`}
+                  } bg-transparent border-0 text-white font-medium py-2 px-3 rounded-lg transition-all duration-300 hover:bg-white hover:bg-opacity-10 hover:shadow-lg hover:shadow-white/10 hover:scale-105 active:scale-95 flex items-center justify-between w-full text-left`}
                 >
-                  <div className="navigation-item-content">
-                    <Icon className="navigation-item-icon" />
-                    <span className="navigation-item-text">{item.name}</span>
+                  <div className="navigation-item-content flex items-center gap-3">
+                    <Icon className="navigation-item-icon w-5 h-5 text-white transition-colors duration-300" />
+                    <span className="navigation-item-text text-sm font-medium text-white">{item.name}</span>
                   </div>
                   
-                  <div className="navigation-item-right">
+                  <div className="navigation-item-right flex items-center gap-2">
                     {item.badge && (
-                      <span className="navigation-badge">
+                      <span className="navigation-badge bg-red-500 bg-opacity-20 text-white text-xs px-2 py-1 rounded-full border border-red-500 border-opacity-30">
                         {item.badge}
                       </span>
                     )}
                     
                     {hasSubItems && (
                       <ChevronDown 
-                        className={`navigation-chevron ${
-                          isExpanded ? 'open' : ''
-                        }`} 
+                        className={`navigation-chevron w-4 h-4 text-white transition-all duration-300 ${
+                          isExpanded ? 'open rotate-180' : ''
+                        } hover:text-red-400`} 
                       />
                     )}
                   </div>
@@ -134,11 +134,11 @@ const NavigationMenu = ({ activeItem = 'Dashboard', onItemClick }) => {
                           onClick={() => handleItemClick(subItem.name, true, item.name)}
                           className={`navigation-submenu-item ${
                             isActive(subItem.name, true, item.name) ? 'active' : ''
-                          }`}
+                          } bg-transparent border-0 text-white text-sm py-2 px-3 rounded-lg transition-all duration-300 hover:bg-white hover:bg-opacity-10 hover:shadow-md hover:shadow-white/5 hover:translate-x-1 active:scale-95 flex items-center justify-between w-full text-left ml-4`}
                         >
-                          <span className="navigation-submenu-text">{subItem.name}</span>
+                          <span className="navigation-submenu-text text-white">{subItem.name}</span>
                           {subItem.badge && (
-                            <span className="navigation-submenu-badge">
+                            <span className="navigation-submenu-badge bg-red-500 bg-opacity-20 text-white text-xs px-2 py-1 rounded-full border border-red-500 border-opacity-30">
                               {subItem.badge}
                             </span>
                           )}
