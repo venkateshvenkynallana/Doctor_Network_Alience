@@ -71,9 +71,7 @@ export const AuthProvider = ({ children }) => {
             description: backendUser.profile.experience.description,
             jobTitle: backendUser.profile.experience.jobTitle,
             id: Date.now()
-          }] : [],
-          interests: [],
-          achievements: []
+          }] : []
         };
         
         console.log('Setting user data:', userData);

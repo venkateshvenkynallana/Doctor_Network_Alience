@@ -1,86 +1,45 @@
-import React, { useState, useEffect } from 'react';
-import { User, Mail, Phone, Briefcase, FileText, Save, Camera, Plus, X, Edit2, Check, Upload, Award, Star } from 'lucide-react';
-import { useAuth } from '../../../../contexts/AuthContext';
+import React, { useState, useRef } from 'react';
+import { User, Upload, Plus, X, Award, BookOpen, Briefcase, Camera, Video, FileText, MapPin, Mail, Phone, Calendar, GraduationCap, Star, Trash2, Edit, Eye } from 'lucide-react';
 import './Profile.css';
 
-const Profile = () => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [showProfilePreview, setShowProfilePreview] = useState(false);
-  const { user, updateUserProfile } = useAuth();
+const Profile = ({ onMenuClick }) => {
   
   const [profileData, setProfileData] = useState({
-    professionalTitle: '',
+    profileImage: '',
     fullName: '',
     email: '',
     phone: '',
-    professionalSummary: '',
+    bio: '',
     designation: '',
-    workingHospital: '',
-    yearsOfExperience: '',
-    profileImage: null,
-    keySkills: [],
-    experience: [],
+    hospitalName: '',
+    totalExperience: '',
+    workExperience: [],
     education: [],
-    interests: [],
     achievements: [],
-    certifications: []
+    awardImages: [],
+    videos: [],
+    files: [],
+    interests: []
   });
 
-  useEffect(() => {
-    if (user) {
-      setProfileData(prev => ({
-        ...prev,
-        fullName: user.fullName || '',
-        email: user.email || '',
-        phone: user.phone || user.phoneNo || '',
-        professionalSummary: user.professionalSummary || user.bio || '',
-        designation: user.designation || '',
-        workingHospital: user.workingHospital || user.profile?.experience?.hospital || '',
-        yearsOfExperience: user.yearsOfExperience || user.profile?.experience?.duration || '',
-        profileImage: user.profileImage || user.profilepic || null,
-        professionalTitle: user.professionalTitle || user.profile?.professionalHeadline || '',
-        keySkills: user.keySkills || user.profile?.skills || [],
-        experience: user.experience || (user.profile?.experience ? [{
-          hospitalName: user.profile.experience.hospital,
-          duration: user.profile.experience.duration,
-          years: user.profile.experience.duration,
-          description: user.profile.experience.description,
-          jobTitle: user.profile.experience.jobTitle,
-          id: Date.now()
-        }] : []),
-        education: user.education || (user.profile?.education ? [{
-          degree: user.profile.education.degree,
-          institution: user.profile.education.university,
-          year: user.profile.education.year,
-          id: Date.now()
-        }] : []),
-        interests: user.interests || [],
-        achievements: user.achievements || [],
-        certifications: user.certifications || (user.profile?.certifications ? [{
-          name: user.profile.certifications.name,
-          organization: user.profile.certifications.issuingOrganization,
-          validUntil: user.profile.certifications.validUntil,
-          id: Date.now()
-        }] : [])
-      }));
-    }
-  }, [user]);
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState('');
 
-  const [newEducation, setNewEducation] = useState({ degree: '', institution: '', year: '' });
   const [newInterest, setNewInterest] = useState('');
-  const [newAchievement, setNewAchievement] = useState({ title: '', organization: '' });
-  const [newSkill, setNewSkill] = useState('');
-  const [newExperience, setNewExperience] = useState({ hospitalName: '', duration: '', years: '', description: '' });
-  const [newCertification, setNewCertification] = useState({ name: '', image: null });
+  const fileInputRef = useRef(null);
+  const awardImagesRef = useRef(null);
+  const filesRef = useRef(null);
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
     setProfileData(prev => ({
       ...prev,
-      [field]: value
+      [name]: value
     }));
   };
 
-  const handleImageUpload = (e) => {
+  const handleProfileImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
@@ -94,30 +53,49 @@ const Profile = () => {
     }
   };
 
-  const handleCertificationImageUpload = (e, certificationId) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileData(prev => ({
-          ...prev,
-          certifications: prev.certifications.map(cert => 
-            cert.id === certificationId ? { ...cert, image: reader.result } : cert
-          )
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
+  const addWorkExperience = () => {
+    setProfileData(prev => ({
+      ...prev,
+      workExperience: [
+        ...prev.workExperience,
+        { id: Date.now(), hospital: '', duration: { from: '', to: '' } }
+      ]
+    }));
+  };
+
+  const updateWorkExperience = (id, field, value) => {
+    setProfileData(prev => ({
+      ...prev,
+      workExperience: prev.workExperience.map(exp =>
+        exp.id === id ? { ...exp, [field]: value } : exp
+      )
+    }));
+  };
+
+  const removeWorkExperience = (id) => {
+    setProfileData(prev => ({
+      ...prev,
+      workExperience: prev.workExperience.filter(exp => exp.id !== id)
+    }));
   };
 
   const addEducation = () => {
-    if (newEducation.degree && newEducation.institution && newEducation.year) {
-      setProfileData(prev => ({
-        ...prev,
-        education: [...prev.education, { ...newEducation, id: Date.now() }]
-      }));
-      setNewEducation({ degree: '', institution: '', year: '' });
-    }
+    setProfileData(prev => ({
+      ...prev,
+      education: [
+        ...prev.education,
+        { id: Date.now(), degree: '', university: '', year: '' }
+      ]
+    }));
+  };
+
+  const updateEducation = (id, field, value) => {
+    setProfileData(prev => ({
+      ...prev,
+      education: prev.education.map(edu =>
+        edu.id === id ? { ...edu, [field]: value } : edu
+      )
+    }));
   };
 
   const removeEducation = (id) => {
@@ -127,31 +105,23 @@ const Profile = () => {
     }));
   };
 
-  const addInterest = () => {
-    if (newInterest && !profileData.interests.includes(newInterest)) {
-      setProfileData(prev => ({
-        ...prev,
-        interests: [...prev.interests, newInterest]
-      }));
-      setNewInterest('');
-    }
-  };
-
-  const removeInterest = (interest) => {
+  const addAchievement = () => {
     setProfileData(prev => ({
       ...prev,
-      interests: prev.interests.filter(int => int !== interest)
+      achievements: [
+        ...prev.achievements,
+        { id: Date.now(), name: '', organization: '' }
+      ]
     }));
   };
 
-  const addAchievement = () => {
-    if (newAchievement.title && newAchievement.organization) {
-      setProfileData(prev => ({
-        ...prev,
-        achievements: [...prev.achievements, { ...newAchievement, id: Date.now() }]
-      }));
-      setNewAchievement({ title: '', organization: '' });
-    }
+  const updateAchievement = (id, field, value) => {
+    setProfileData(prev => ({
+      ...prev,
+      achievements: prev.achievements.map(ach =>
+        ach.id === id ? { ...ach, [field]: value } : ach
+      )
+    }));
   };
 
   const removeAchievement = (id) => {
@@ -161,698 +131,593 @@ const Profile = () => {
     }));
   };
 
-  const addSkill = () => {
-    if (newSkill && !profileData.keySkills.includes(newSkill)) {
-      setProfileData(prev => ({
-        ...prev,
-        keySkills: [...prev.keySkills, newSkill]
-      }));
-      setNewSkill('');
-    }
+  const handleAwardImagesUpload = (e) => {
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileData(prev => ({
+          ...prev,
+          awardImages: [...prev.awardImages, reader.result]
+        }));
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
-  const removeSkill = (skill) => {
+  const removeAwardImage = (index) => {
     setProfileData(prev => ({
       ...prev,
-      keySkills: prev.keySkills.filter(s => s !== skill)
+      awardImages: prev.awardImages.filter((_, i) => i !== index)
     }));
   };
 
-  const addExperience = () => {
-    if (newExperience.hospitalName && newExperience.duration && newExperience.years) {
-      setProfileData(prev => ({
-        ...prev,
-        experience: [...prev.experience, { ...newExperience, id: Date.now() }]
-      }));
-      setNewExperience({ hospitalName: '', duration: '', years: '', description: '' });
-    }
-  };
-
-  const removeExperience = (id) => {
+  const addVideo = () => {
     setProfileData(prev => ({
       ...prev,
-      experience: prev.experience.filter(exp => exp.id !== id)
+      videos: [...prev.videos, { id: Date.now(), url: '' }]
     }));
   };
 
-  const addCertification = () => {
-    if (newCertification.name) {
-      setProfileData(prev => ({
-        ...prev,
-        certifications: [...prev.certifications, { ...newCertification, id: Date.now() }]
-      }));
-      setNewCertification({ name: '', image: null });
-    }
-  };
-
-  const removeCertification = (id) => {
+  const updateVideo = (id, url) => {
     setProfileData(prev => ({
       ...prev,
-      certifications: prev.certifications.filter(cert => cert.id !== id)
+      videos: prev.videos.map(video =>
+        video.id === id ? { ...video, url } : video
+      )
     }));
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
-    updateUserProfile(profileData);
-    console.log('Profile data saved:', profileData);
+  const removeVideo = (id) => {
+    setProfileData(prev => ({
+      ...prev,
+      videos: prev.videos.filter(video => video.id !== id)
+    }));
+  };
+
+  const handleFilesUpload = (e) => {
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileData(prev => ({
+          ...prev,
+          files: [...prev.files, { name: file.name, data: reader.result }]
+        }));
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeFile = (index) => {
+    setProfileData(prev => ({
+      ...prev,
+      files: prev.files.filter((_, i) => i !== index)
+    }));
+  };
+
+  const addInterest = () => {
+    if (newInterest.trim()) {
+      setProfileData(prev => ({
+        ...prev,
+        interests: [...prev.interests, newInterest.trim()]
+      }));
+      setNewInterest('');
+    }
+  };
+
+  const removeInterest = (index) => {
+    setProfileData(prev => ({
+      ...prev,
+      interests: prev.interests.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleInterestKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addInterest();
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!profileData.fullName.trim()) {
+      newErrors.fullName = 'Full name is required';
+    }
+    
+    if (!profileData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(profileData.email)) {
+      newErrors.email = 'Email is invalid';
+    }
+    
+    if (!profileData.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!/^\+?[\d\s\-\(\)]+$/.test(profileData.phone)) {
+      newErrors.phone = 'Phone number is invalid';
+    }
+    
+    if (!profileData.designation.trim()) {
+      newErrors.designation = 'Designation is required';
+    }
+    
+    if (!profileData.hospitalName.trim()) {
+      newErrors.hospitalName = 'Hospital name is required';
+    }
+    
+    if (profileData.totalExperience && (isNaN(profileData.totalExperience) || profileData.totalExperience < 0)) {
+      newErrors.totalExperience = 'Years of experience must be a positive number';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
+    setIsSubmitting(true);
+    setSubmitMessage('');
+    
+    try {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      setSubmitMessage('Profile saved successfully!');
+      console.log('Profile data:', profileData);
+    } catch (error) {
+      setSubmitMessage('Error saving profile. Please try again.');
+      console.error('Error saving profile:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="profile-container">
       <div className="profile-header">
-        <div className="profile-header-content">
-          <h1>Profile Settings</h1>
-          <p>Manage your personal and professional information</p>
+        <h1 className="profile-title">Doctor Profile</h1>
+        <p className="profile-subtitle">Manage your professional information</p>
+      </div>
+
+      <div className="card profile-header-section">
+        <div className="profile-image-container">
+          <div className="profile-image-wrapper">
+            {profileData.profileImage ? (
+              <img src={profileData.profileImage} alt="Profile" className="profile-image" />
+            ) : (
+              <div className="profile-image-placeholder">
+                <User size={48} />
+              </div>
+            )}
+            <button 
+              className="profile-image-upload-btn"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Camera size={20} />
+            </button>
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleProfileImageUpload}
+            className="hidden"
+          />
         </div>
-        <div className="profile-actions">
-          <button className="btn-view-profile" onClick={() => setShowProfilePreview(true)}>
-            <User className="btn-icon" />
-            View Profile
+        <div className="profile-info">
+          <h2 className="doctor-name">{profileData.fullName || 'Dr. John Doe'}</h2>
+          <p className="doctor-designation">{profileData.designation || 'Cardiologist'}</p>
+        </div>
+      </div>
+
+      <div className="card">
+        <h3 className="section-title">
+          <User size={20} />
+          Personal Information
+        </h3>
+        <div className="form-grid">
+          <div className="form-group">
+            <label>Full Name</label>
+            <input
+              type="text"
+              name="fullName"
+              value={profileData.fullName}
+              onChange={handleInputChange}
+              placeholder="Dr. John Doe"
+              className={errors.fullName ? 'error' : ''}
+            />
+            {errors.fullName && <span className="error-message">{errors.fullName}</span>}
+          </div>
+          <div className="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              name="email"
+              value={profileData.email}
+              onChange={handleInputChange}
+              placeholder="john.doe@hospital.com"
+              className={errors.email ? 'error' : ''}
+            />
+            {errors.email && <span className="error-message">{errors.email}</span>}
+          </div>
+          <div className="form-group">
+            <label>Phone Number</label>
+            <input
+              type="tel"
+              name="phone"
+              value={profileData.phone}
+              onChange={handleInputChange}
+              placeholder="+1 (555) 123-4567"
+              className={errors.phone ? 'error' : ''}
+            />
+            {errors.phone && <span className="error-message">{errors.phone}</span>}
+          </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <h3 className="section-title">
+          <Briefcase size={20} />
+          Professional Information
+        </h3>
+        <div className="form-grid">
+          <div className="form-group full-width">
+            <label>Bio / About</label>
+            <textarea
+              name="bio"
+              value={profileData.bio}
+              onChange={handleInputChange}
+              placeholder="Tell us about your professional background and expertise..."
+              rows={4}
+            />
+          </div>
+          <div className="form-group">
+            <label>Designation</label>
+            <input
+              type="text"
+              name="designation"
+              value={profileData.designation}
+              onChange={handleInputChange}
+              placeholder="Senior Cardiologist"
+              className={errors.designation ? 'error' : ''}
+            />
+            {errors.designation && <span className="error-message">{errors.designation}</span>}
+          </div>
+          <div className="form-group">
+            <label>Hospital Name</label>
+            <input
+              type="text"
+              name="hospitalName"
+              value={profileData.hospitalName}
+              onChange={handleInputChange}
+              placeholder="City Medical Center"
+              className={errors.hospitalName ? 'error' : ''}
+            />
+            {errors.hospitalName && <span className="error-message">{errors.hospitalName}</span>}
+          </div>
+          <div className="form-group">
+            <label>Total Years of Experience</label>
+            <input
+              type="number"
+              name="totalExperience"
+              value={profileData.totalExperience}
+              onChange={handleInputChange}
+              placeholder="15"
+              className={errors.totalExperience ? 'error' : ''}
+            />
+            {errors.totalExperience && <span className="error-message">{errors.totalExperience}</span>}
+          </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <h3 className="section-title">
+          <Briefcase size={20} />
+          Work Experience
+        </h3>
+        <div className="experience-list">
+          {profileData.workExperience.map((exp) => (
+            <div key={exp.id} className="experience-item">
+              <div className="experience-header">
+                <h4>Experience Entry</h4>
+                <button 
+                  className="remove-btn"
+                  onClick={() => removeWorkExperience(exp.id)}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label>Hospital Name</label>
+                  <input
+                    type="text"
+                    value={exp.hospital}
+                    onChange={(e) => updateWorkExperience(exp.id, 'hospital', e.target.value)}
+                    placeholder="Hospital Name"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>From</label>
+                  <input
+                    type="month"
+                    value={exp.duration.from}
+                    onChange={(e) => updateWorkExperience(exp.id, 'duration', { ...exp.duration, from: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>To</label>
+                  <input
+                    type="month"
+                    value={exp.duration.to}
+                    onChange={(e) => updateWorkExperience(exp.id, 'duration', { ...exp.duration, to: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <button className="add-btn" onClick={addWorkExperience}>
+          <Plus size={16} />
+          Add Experience
+        </button>
+      </div>
+
+      <div className="card">
+        <h3 className="section-title">
+          <GraduationCap size={20} />
+          Education Details
+        </h3>
+        <div className="education-list">
+          {profileData.education.map((edu) => (
+            <div key={edu.id} className="education-item">
+              <div className="education-header">
+                <h4>Education Entry</h4>
+                <button 
+                  className="remove-btn"
+                  onClick={() => removeEducation(edu.id)}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label>Degree Name</label>
+                  <input
+                    type="text"
+                    value={edu.degree}
+                    onChange={(e) => updateEducation(edu.id, 'degree', e.target.value)}
+                    placeholder="MBBS, MD, etc."
+                  />
+                </div>
+                <div className="form-group">
+                  <label>University Name</label>
+                  <input
+                    type="text"
+                    value={edu.university}
+                    onChange={(e) => updateEducation(edu.id, 'university', e.target.value)}
+                    placeholder="University Name"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Year of Completion</label>
+                  <input
+                    type="number"
+                    value={edu.year}
+                    onChange={(e) => updateEducation(edu.id, 'year', e.target.value)}
+                    placeholder="2020"
+                    min="1950"
+                    max={new Date().getFullYear()}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <button className="add-btn" onClick={addEducation}>
+          <Plus size={16} />
+          Add Education
+        </button>
+      </div>
+
+      <div className="card">
+        <h3 className="section-title">
+          <Award size={20} />
+          Achievements & Awards
+        </h3>
+        <div className="achievements-list">
+          {profileData.achievements.map((ach) => (
+            <div key={ach.id} className="achievement-item">
+              <div className="achievement-header">
+                <h4>Award Entry</h4>
+                <button 
+                  className="remove-btn"
+                  onClick={() => removeAchievement(ach.id)}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label>Award / Achievement Name</label>
+                  <input
+                    type="text"
+                    value={ach.name}
+                    onChange={(e) => updateAchievement(ach.id, 'name', e.target.value)}
+                    placeholder="Best Doctor Award"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Organization</label>
+                  <input
+                    type="text"
+                    value={ach.organization}
+                    onChange={(e) => updateAchievement(ach.id, 'organization', e.target.value)}
+                    placeholder="Medical Association"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <button className="add-btn" onClick={addAchievement}>
+          <Plus size={16} />
+          Add Achievement
+        </button>
+        
+        <div className="award-images-section">
+          <h4>Award Images</h4>
+          <button 
+            className="upload-btn"
+            onClick={() => awardImagesRef.current?.click()}
+          >
+            <Upload size={16} />
+            Upload Award Images
           </button>
-          {!isEditing ? (
-            <button className="btn-edit" onClick={() => setIsEditing(true)}>
-              <Edit2 className="btn-icon" />
-              Edit Profile
-            </button>
-          ) : (
-            <button className="btn-save" onClick={handleSave}>
-              <Check className="btn-icon" />
-              Save Changes
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div className="profile-content">
-        {/* Personal Information Section */}
-        <div className="profile-section">
-          <div className="section-header">
-            <User className="section-icon" />
-            <h2>Personal Information</h2>
-          </div>
-          <div className="section-content">
-            <div className="personal-info-layout">
-              {/* Profile Image on Left Side */}
-              <div className="profile-image-section">
-                <div className="profile-image-wrapper">
-                  {profileData.profileImage ? (
-                    <img src={profileData.profileImage} alt="Profile" className="profile-image" />
-                  ) : (
-                    <div className="profile-image-placeholder">
-                      <User size={48} />
-                    </div>
-                  )}
-                  {isEditing && (
-                    <div className="profile-image-upload">
-                      <input
-                        type="file"
-                        id="profileImage"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                      />
-                      <label htmlFor="profileImage" className="upload-btn">
-                        <Upload size={20} />
-                        Upload Photo
-                      </label>
-                    </div>
-                  )}
-                </div>
+          <input
+            ref={awardImagesRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleAwardImagesUpload}
+            className="hidden"
+          />
+          <div className="image-gallery">
+            {profileData.awardImages.map((img, index) => (
+              <div key={index} className="image-item">
+                <img src={img} alt={`Award ${index + 1}`} />
+                <button 
+                  className="image-remove-btn"
+                  onClick={() => removeAwardImage(index)}
+                >
+                  <X size={16} />
+                </button>
               </div>
-
-              {/* Form Fields on Right Side */}
-              <div className="form-fields-section">
-                <div className="form-grid">
-                  <div className="form-group">
-                    <label htmlFor="fullName">Full Name</label>
-                    <input
-                      type="text"
-                      id="fullName"
-                      value={profileData.fullName}
-                      onChange={(e) => handleInputChange('fullName', e.target.value)}
-                      disabled={!isEditing}
-                      className="form-input"
-                      placeholder="Enter your full name"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="email">Email Address</label>
-                    <input
-                      type="email"
-                      id="email"
-                      value={profileData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      disabled={!isEditing}
-                      className="form-input"
-                      placeholder="your.email@example.com"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="phone">Phone Number</label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      value={profileData.phone}
-                      onChange={(e) => handleInputChange('phone', e.target.value)}
-                      disabled={!isEditing}
-                      className="form-input"
-                      placeholder="your phone number"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Professional Information Section */}
-        <div className="profile-section">
-          <div className="section-header">
-            <Briefcase className="section-icon" />
-            <h2>Professional Information</h2>
-          </div>
-          <div className="section-content">
-            <div className="professional-form-grid">
-              <div className="form-group full-width">
-                <label htmlFor="professionalSummary">Professional Summary</label>
-                <textarea
-                  id="professionalSummary"
-                  value={profileData.professionalSummary}
-                  onChange={(e) => handleInputChange('professionalSummary', e.target.value)}
-                  disabled={!isEditing}
-                  className="form-textarea"
-                  rows="4"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="designation">Designation</label>
-                <input
-                  type="text"
-                  id="designation"
-                  value={profileData.designation}
-                  onChange={(e) => handleInputChange('designation', e.target.value)}
-                  disabled={!isEditing}
-                  className="form-input"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="workingHospital">Working Hospital</label>
-                <input
-                  type="text"
-                  id="workingHospital"
-                  value={profileData.workingHospital}
-                  onChange={(e) => handleInputChange('workingHospital', e.target.value)}
-                  disabled={!isEditing}
-                  className="form-input"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="yearsOfExperience">Total Years of Experience</label>
-                <input
-                  type="text"
-                  id="yearsOfExperience"
-                  value={profileData.yearsOfExperience}
-                  onChange={(e) => handleInputChange('yearsOfExperience', e.target.value)}
-                  disabled={!isEditing}
-                  className="form-input"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Key Skills Section */}
-        <div className="profile-section">
-          <div className="section-header">
-            <Star className="section-icon" />
-            <h2>Key Skills</h2>
-          </div>
-          <div className="section-content">
-            <div className="tags-container">
-              {profileData.keySkills.map((skill, index) => (
-                <div key={index} className="tag">
-                  {skill}
-                  {isEditing && (
-                    <button
-                      className="tag-remove"
-                      onClick={() => removeSkill(skill)}
-                    >
-                      <X size={12} />
-                    </button>
-                  )}
-                </div>
-              ))}
-              {isEditing && (
-                <div className="add-tag-form">
-                  <input
-                    type="text"
-                    placeholder="Add skill"
-                    value={newSkill}
-                    onChange={(e) => setNewSkill(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addSkill()}
-                    className="tag-input"
-                  />
-                  <button className="btn-add" onClick={addSkill}>
-                    <Plus size={16} />
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Experience Section */}
-        <div className="profile-section">
-          <div className="section-header">
-            <Briefcase className="section-icon" />
-            <h2>Work Experience</h2>
-          </div>
-          <div className="section-content">
-            <div className="dynamic-list">
-              {profileData.experience.map((exp) => (
-                <div key={exp.id} className="list-item">
-                  <div className="item-content">
-                    <div className="item-title">{exp.hospitalName}</div>
-                    <div className="item-subtitle">{exp.duration} • {exp.years} years</div>
-                    <div className="item-description">{exp.description}</div>
-                  </div>
-                  {isEditing && (
-                    <button
-                      className="btn-remove"
-                      onClick={() => removeExperience(exp.id)}
-                    >
-                      <X size={16} />
-                    </button>
-                  )}
-                </div>
-              ))}
-              {isEditing && (
-                <div className="add-item-form">
-                  <div className="form-row">
-                    <input
-                      type="text"
-                      placeholder="Hospital Name"
-                      value={newExperience.hospitalName}
-                      onChange={(e) => setNewExperience(prev => ({ ...prev, hospitalName: e.target.value }))}
-                      className="form-input small"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Duration (e.g., 2018 - Present)"
-                      value={newExperience.duration}
-                      onChange={(e) => setNewExperience(prev => ({ ...prev, duration: e.target.value }))}
-                      className="form-input small"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Years"
-                      value={newExperience.years}
-                      onChange={(e) => setNewExperience(prev => ({ ...prev, years: e.target.value }))}
-                      className="form-input small"
-                    />
-                  </div>
-                  <div className="form-row">
-                    <input
-                      type="text"
-                      placeholder="Description"
-                      value={newExperience.description}
-                      onChange={(e) => setNewExperience(prev => ({ ...prev, description: e.target.value }))}
-                      className="form-input"
-                    />
-                    <button className="btn-add" onClick={addExperience}>
-                      <Plus size={16} />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Education Section */}
-        <div className="profile-section">
-          <div className="section-header">
-            <FileText className="section-icon" />
-            <h2>Education & Qualifications</h2>
-          </div>
-          <div className="section-content">
-            <div className="dynamic-list">
-              {profileData.education.map((edu) => (
-                <div key={edu.id} className="list-item">
-                  <div className="item-content">
-                    <div className="item-title">{edu.degree}</div>
-                    <div className="item-subtitle">{edu.institution}</div>
-                    <div className="item-year">{edu.year}</div>
-                  </div>
-                  {isEditing && (
-                    <button
-                      className="btn-remove"
-                      onClick={() => removeEducation(edu.id)}
-                    >
-                      <X size={16} />
-                    </button>
-                  )}
-                </div>
-              ))}
-              {isEditing && (
-                <div className="add-item-form">
-                  <div className="form-row">
-                    <input
-                      type="text"
-                      placeholder="Degree/Certificate"
-                      value={newEducation.degree}
-                      onChange={(e) => setNewEducation(prev => ({ ...prev, degree: e.target.value }))}
-                      className="form-input small"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Institution"
-                      value={newEducation.institution}
-                      onChange={(e) => setNewEducation(prev => ({ ...prev, institution: e.target.value }))}
-                      className="form-input small"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Year"
-                      value={newEducation.year}
-                      onChange={(e) => setNewEducation(prev => ({ ...prev, year: e.target.value }))}
-                      className="form-input small"
-                    />
-                    <button className="btn-add" onClick={addEducation}>
-                      <Plus size={16} />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Interests Section */}
-        <div className="profile-section">
-          <div className="section-header">
-            <User className="section-icon" />
-            <h2>Professional Interests</h2>
-          </div>
-          <div className="section-content">
-            <div className="tags-container">
-              {profileData.interests.map((interest, index) => (
-                <div key={index} className="tag">
-                  {interest}
-                  {isEditing && (
-                    <button
-                      className="tag-remove"
-                      onClick={() => removeInterest(interest)}
-                    >
-                      <X size={12} />
-                    </button>
-                  )}
-                </div>
-              ))}
-              {isEditing && (
-                <div className="add-tag-form">
-                  <input
-                    type="text"
-                    placeholder="Add interest"
-                    value={newInterest}
-                    onChange={(e) => setNewInterest(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addInterest()}
-                    className="tag-input"
-                  />
-                  <button className="btn-add" onClick={addInterest}>
-                    <Plus size={16} />
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Achievements Section */}
-        <div className="profile-section">
-          <div className="section-header">
-            <Award className="section-icon" />
-            <h2>Achievements & Awards</h2>
-          </div>
-          <div className="section-content">
-            <div className="dynamic-list">
-              {profileData.achievements.map((achievement) => (
-                <div key={achievement.id} className="list-item">
-                  <div className="item-content">
-                    <div className="item-title">{achievement.title}</div>
-                    <div className="item-subtitle">{achievement.organization}</div>
-                  </div>
-                  {isEditing && (
-                    <button
-                      className="btn-remove"
-                      onClick={() => removeAchievement(achievement.id)}
-                    >
-                      <X size={16} />
-                    </button>
-                  )}
-                </div>
-              ))}
-              {isEditing && (
-                <div className="add-item-form">
-                  <div className="form-row">
-                    <input
-                      type="text"
-                      placeholder="Achievement/Award Title"
-                      value={newAchievement.title}
-                      onChange={(e) => setNewAchievement(prev => ({ ...prev, title: e.target.value }))}
-                      className="form-input small"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Organization"
-                      value={newAchievement.organization}
-                      onChange={(e) => setNewAchievement(prev => ({ ...prev, organization: e.target.value }))}
-                      className="form-input small"
-                    />
-                    <button className="btn-add" onClick={addAchievement}>
-                      <Plus size={16} />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Certifications Section */}
-        <div className="profile-section">
-          <div className="section-header">
-            <Award className="section-icon" />
-            <h2>Certifications</h2>
-          </div>
-          <div className="section-content">
-            <div className="dynamic-list">
-              {profileData.certifications.map((certification) => (
-                <div key={certification.id} className="list-item certification-item">
-                  <div className="item-content">
-                    <div className="item-title">{certification.name}</div>
-                    {certification.image && (
-                      <div className="certification-image">
-                        <img src={certification.image} alt={certification.name} />
-                      </div>
-                    )}
-                  </div>
-                  <div className="certification-actions">
-                    {isEditing && (
-                      <>
-                        <div className="certification-upload">
-                          <input
-                            type="file"
-                            id={`cert-${certification.id}`}
-                            accept="image/*"
-                            onChange={(e) => handleCertificationImageUpload(e, certification.id)}
-                            className="hidden"
-                          />
-                          <label htmlFor={`cert-${certification.id}`} className="upload-btn-small">
-                            <Upload size={16} />
-                          </label>
-                        </div>
-                        <button
-                          className="btn-remove"
-                          onClick={() => removeCertification(certification.id)}
-                        >
-                          <X size={16} />
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              ))}
-              {isEditing && (
-                <div className="add-item-form">
-                  <div className="form-row">
-                    <input
-                      type="text"
-                      placeholder="Certification Name"
-                      value={newCertification.name}
-                      onChange={(e) => setNewCertification(prev => ({ ...prev, name: e.target.value }))}
-                      className="form-input"
-                    />
-                    <button className="btn-add" onClick={addCertification}>
-                      <Plus size={16} />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Profile Preview Modal */}
-      {showProfilePreview && (
-        <div className="profile-preview-overlay" onClick={() => setShowProfilePreview(false)}>
-          <div className="profile-preview-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="preview-header">
-              <h2>Doctor Profile Preview</h2>
-              <button className="btn-close-preview" onClick={() => setShowProfilePreview(false)}>
-                <X size={24} />
+      <div className="card">
+        <h3 className="section-title">
+          <Video size={20} />
+          Media Upload
+        </h3>
+        
+        <div className="videos-section">
+          <h4>Videos</h4>
+          {profileData.videos.map((video) => (
+            <div key={video.id} className="video-item">
+              <input
+                type="url"
+                value={video.url}
+                onChange={(e) => updateVideo(video.id, e.target.value)}
+                placeholder="https://youtube.com/watch?v=..."
+              />
+              <button 
+                className="remove-btn"
+                onClick={() => removeVideo(video.id)}
+              >
+                <Trash2 size={16} />
               </button>
             </div>
-            
-            <div className="preview-content">
-              {/* Profile Header */}
-              <div className="preview-profile-header">
-                <div className="preview-profile-image">
-                  {profileData.profileImage ? (
-                    <img src={profileData.profileImage} alt="Profile" />
-                  ) : (
-                    <div className="preview-image-placeholder">
-                      <User size={60} />
-                    </div>
-                  )}
-                </div>
-                <div className="preview-basic-info">
-                  <h1>{profileData.fullName || 'Name not provided'}</h1>
-                  <p className="preview-designation">{profileData.designation || 'Designation not provided'}</p>
-                  <p className="preview-hospital">{profileData.workingHospital || 'Hospital not provided'}</p>
-                  <div className="preview-contact">
-                    <div className="contact-item">
-                      <Mail size={16} />
-                      <span>{profileData.email || 'Email not provided'}</span>
-                    </div>
-                    <div className="contact-item">
-                      <Phone size={16} />
-                      <span>{profileData.phone || 'Phone not provided'}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          ))}
+          <button className="add-btn" onClick={addVideo}>
+            <Plus size={16} />
+            Add Video
+          </button>
+        </div>
 
-              {/* Professional Summary */}
-              <div className="preview-section">
-                <h3><FileText size={20} /> Professional Summary</h3>
-                <p>{profileData.professionalSummary || 'Professional summary not provided'}</p>
+        <div className="files-section">
+          <h4>Files</h4>
+          <button 
+            className="upload-btn"
+            onClick={() => filesRef.current?.click()}
+          >
+            <Upload size={16} />
+            Upload Files (PDF, Certificates)
+          </button>
+          <input
+            ref={filesRef}
+            type="file"
+            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+            multiple
+            onChange={handleFilesUpload}
+            className="hidden"
+          />
+          <div className="files-list">
+            {profileData.files.map((file, index) => (
+              <div key={index} className="file-item">
+                <FileText size={16} />
+                <span>{file.name}</span>
+                <button 
+                  className="remove-btn"
+                  onClick={() => removeFile(index)}
+                >
+                  <X size={16} />
+                </button>
               </div>
-
-              {/* Key Skills */}
-              <div className="preview-section">
-                <h3><Star size={20} /> Key Skills</h3>
-                <div className="preview-skills">
-                  {profileData.keySkills.length > 0 ? (
-                    profileData.keySkills.map((skill, index) => (
-                      <span key={index} className="skill-tag">{skill}</span>
-                    ))
-                  ) : (
-                    <p className="no-data">No skills added yet</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Experience */}
-              <div className="preview-section">
-                <h3><Briefcase size={20} /> Work Experience</h3>
-                <div className="preview-experience">
-                  {profileData.experience.length > 0 ? (
-                    profileData.experience.map((exp) => (
-                      <div key={exp.id} className="experience-item">
-                        <h4>{exp.hospitalName}</h4>
-                        <p className="exp-duration">{exp.duration} • {exp.years} years</p>
-                        <p className="exp-description">{exp.description}</p>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="no-data">No experience added yet</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Education */}
-              <div className="preview-section">
-                <h3><FileText size={20} /> Education</h3>
-                <div className="preview-education">
-                  {profileData.education.length > 0 ? (
-                    profileData.education.map((edu) => (
-                      <div key={edu.id} className="education-item">
-                        <h4>{edu.degree}</h4>
-                        <p>{edu.institution} • {edu.year}</p>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="no-data">No education details added yet</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Interests */}
-              <div className="preview-section">
-                <h3><User size={20} /> Professional Interests</h3>
-                <div className="preview-interests">
-                  {profileData.interests.length > 0 ? (
-                    profileData.interests.map((interest, index) => (
-                      <span key={index} className="interest-tag">{interest}</span>
-                    ))
-                  ) : (
-                    <p className="no-data">No interests added yet</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Achievements */}
-              <div className="preview-section">
-                <h3><Award size={20} /> Achievements & Awards</h3>
-                <div className="preview-achievements">
-                  {profileData.achievements.length > 0 ? (
-                    profileData.achievements.map((achievement) => (
-                      <div key={achievement.id} className="achievement-item">
-                        <h4>{achievement.title}</h4>
-                        <p>{achievement.organization}</p>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="no-data">No achievements added yet</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Certifications */}
-              <div className="preview-section">
-                <h3><Award size={20} /> Certifications</h3>
-                <div className="preview-certifications">
-                  {profileData.certifications.length > 0 ? (
-                    profileData.certifications.map((cert) => (
-                      <div key={cert.id} className="certification-item">
-                        <h4>{cert.name}</h4>
-                        {cert.image && (
-                          <img src={cert.image} alt={cert.name} className="cert-image" />
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <p className="no-data">No certifications added yet</p>
-                  )}
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
+      </div>
+
+      <div className="card">
+        <h3 className="section-title">
+          <Star size={20} />
+          Interests
+        </h3>
+        <div className="interests-input">
+          <input
+            type="text"
+            value={newInterest}
+            onChange={(e) => setNewInterest(e.target.value)}
+            onKeyPress={handleInterestKeyPress}
+            placeholder="Add an interest (e.g., Cardiology, Research)"
+          />
+          <button onClick={addInterest}>
+            <Plus size={16} />
+          </button>
+        </div>
+        <div className="interests-chips">
+          {profileData.interests.map((interest, index) => (
+            <div key={index} className="interest-chip">
+              <span>{interest}</span>
+              <button onClick={() => removeInterest(index)}>
+                <X size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {submitMessage && (
+        <div className={`submit-message ${submitMessage.includes('Error') ? 'error' : 'success'}`}>
+          {submitMessage}
+        </div>
       )}
+      <div className="save-section">
+        <button 
+          className="save-btn"
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Saving...' : 'Save Profile'}
+        </button>
+        <button 
+          className="view-profile-btn"
+          onClick={() => onMenuClick('Settings > View Profile')}
+        >
+          <Eye size={16} />
+          View Profile
+        </button>
+      </div>
     </div>
   );
 };
