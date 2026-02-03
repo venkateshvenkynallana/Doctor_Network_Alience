@@ -67,7 +67,7 @@ const Dashboard = () => {
         <header className="dashboard-header">
           <div className="dashboard-header-content">
             <div className="dashboard-header-left">
-              <h1 className="dashboard-title">{activeMenuItem}
+              <h1 className="dashboard-title text-black">{activeMenuItem}
               </h1>
               <p className="dashboard-subtitle">
                 Welcome back

@@ -1,156 +1,352 @@
-import { createContext, useEffect, useState } from "react";
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
-import toast from "react-hot-toast";
+import { toast } from 'react-toastify';
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 axios.defaults.baseURL = backendUrl;
 
-export const AuthContext = createContext();
+const AuthContext = createContext();
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
 
 export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [authUser, setAuthUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-    const [token, setToken] = useState(localStorage.getItem("token"));
-    const [authUser, setAuthUser] = useState(null);
+  // Check for existing user data in localStorage
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setIsLoading(false);
+  }, []);
 
+  //Check if user is authenticated and if so , set the user data
+  const checkAuth = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
-    //Check if user is authenticated and if so , set the user data
-    const checkAuth = async () => {
-        try {
-            const token = localStorage.getItem("token");
-            if (!token) return;
-
-            const { data } = await axios.get("/api/auth/check", {
-                headers: {
-                    Authorization: `Bearer ${token}` 
-                }
-            });
-
-            if (data.success) {
-                setAuthUser(data.user);
-            }
-        } catch (error) {
-            console.error("checkAuth error:", error.response?.data || error.message);
-            toast.error(error.message);
+      const { data } = await axios.get("/api/auth/check", {
+        headers: {
+          Authorization: `Bearer ${token}` 
         }
+      });
+
+      if (data.success) {
+        setAuthUser(data.user);
+      }
+    } catch (error) {
+      console.error("checkAuth error:", error.response?.data || error.message);
+      toast.error(error.message);
     }
+  }
 
-    //Register function to handle user registration
-    const register = async (credentials) => {
-        try {
-            const { data } = await axios.post("/api/auth/signup", credentials);
-            if (data.success) {
-                toast.success("Registration successful. Please login to continue.");
-            } else {
-                toast.error(data.message);
-            }
-        } catch (error) {
-            toast.error(error.message);
-        }
-    }
+  useEffect(() => {
+    const initAuth = async () => {
+      const localToken = localStorage.getItem("token");
+      if (localToken) {
+        setToken(localToken);
+        checkAuth();
+      }
+    };
+    initAuth();
+  }, []);
 
-    //Login function to handle user authentication
-    const login = async (credentials) => {
-        try {
-            const { data } = await axios.post("/api/auth/login", credentials);
-            if (data.success) {
-                setAuthUser(data.userData);
-                setToken(data.token);
-                axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
-                localStorage.setItem("token", data.token);
-                toast.success("Login successful.");
-
-            } else {
-                toast.error(data.message);
-            }
-        } catch (error) {
-            toast.error(error.message);
-        }
-    }
-
-    //Logout function to handle user logout
-    const logout = async () => {
-        localStorage.removeItem("token");
-        setToken(null);
-        setAuthUser(null);
-        axios.defaults.headers.common["Authorization"] = null;
-        toast.success("Logged out successfully.");
-    }
-
-    //Update profile function to handle user profile updates
-    const updateProfile = async (formData) => {
-        try {
-            console.log('Sending profile update request...');
-            
-            // Always use FormData for consistency
-            const config = {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                    // Don't set Content-Type for FormData - let browser set it with boundary
-                }
-            };
-
-            console.log('Request config:', config);
-            console.log('FormData contents:');
-            for (let [key, value] of formData.entries()) {
-                console.log(`${key}:`, value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
-            }
-
-            const { data } = await axios.put("/api/auth/update-profile", formData, config);
-            
-            console.log('Response data:', data);
-            
-            if (data.success) {
-                console.log('Profile update successful, updating user state...');
-                setAuthUser(data.user);
-                toast.success("Profile Updated successfully");
-                
-                // If profile image was updated, update the user's profileImageUrl
-                if (data.user.profilepic || data.user.profileImageUrl) {
-                    console.log('Updating profile image URL...');
-                    setAuthUser(prev => ({
-                        ...prev,
-                        profilepic: data.user.profilepic || data.user.profileImageUrl,
-                        profileImageUrl: data.user.profilepic || data.user.profileImageUrl
-                    }));
-                }
-                
-                // Force a re-render by updating the state
-                setTimeout(() => {
-                    console.log('AuthUser state updated:', authUser);
-                }, 100);
-            } else {
-                toast.error(data.message || "Profile update failed");
-            }
-        } catch (error) {
-            console.error('Profile update error:', error);
-            const errorMessage = error.response?.data?.message || error.message || "Error updating profile";
-            toast.error(errorMessage);
-        }
-    }
-
-    useEffect(() => {
-        const initAuth = async () => {
-            const localToken = localStorage.getItem("token");
-            if (localToken) {
-                setToken(localToken); // Just set state
-                checkAuth(); // New checkAuth handles header
-            }
+  const login = async (credentials) => {
+    console.log('Login function called with:', credentials);
+    try {
+      const response = await axios.post('http://localhost:5000/api/auth/login', {
+        email: credentials.email,
+        password: credentials.password
+      });
+      
+      console.log('Login response:', response.data);
+      
+      if (response.data.success) {
+        // Set token and authUser for compatibility
+        setAuthUser(response.data.userData);
+        setToken(response.data.token);
+        axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.token}`;
+        localStorage.setItem("token", response.data.token);
+        
+        // Transform backend user data to frontend format
+        const backendUser = response.data.userData;
+        const userData = {
+          ...backendUser,
+          token: response.data.token,
+          // Map backend fields to frontend expected fields
+          phone: backendUser.phoneNo || '',
+          professionalSummary: backendUser.bio || '',
+          profileImage: backendUser.profilepic || null,
+          professionalTitle: backendUser.profile?.professionalHeadline || '',
+          keySkills: backendUser.profile?.skills || [],
+          workingHospital: backendUser.profile?.experience?.hospital || '',
+          yearsOfExperience: backendUser.profile?.experience?.duration || '',
+          interests: backendUser.profile?.professionalInterests || [],
+          achievements: backendUser.profile?.achievements || [],
+          // Transform nested objects to arrays for frontend
+          education: backendUser.profile?.education ? [{
+            degree: backendUser.profile.education.degree,
+            institution: backendUser.profile.education.university,
+            year: backendUser.profile.education.year,
+            id: Date.now()
+          }] : [],
+          certifications: backendUser.profile?.certifications ? [{
+            name: backendUser.profile.certifications.name,
+            organization: backendUser.profile.certifications.issuingOrganization,
+            validUntil: backendUser.profile.certifications.validUntil,
+            id: Date.now()
+          }] : [],
+          experience: backendUser.profile?.experience ? [{
+            hospitalName: backendUser.profile.experience.hospital,
+            duration: backendUser.profile.experience.duration,
+            years: backendUser.profile.experience.duration,
+            description: backendUser.profile.experience.description,
+            jobTitle: backendUser.profile.experience.jobTitle,
+            id: Date.now()
+          }] : []
         };
-        initAuth();
-    }, []);
-
-    const value = {
-        token,
-        authUser,
-        login,
-        register,
-        logout,
-        updateProfile
+        
+        console.log('Setting user data:', userData);
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        toast.success('Login successful! Welcome back.');
+        return userData;
+      } else {
+        throw new Error(response.data.message || 'Login failed');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error(error.response?.data?.message || 'Login failed. Please check your credentials.');
+      throw new Error(error.response?.data?.message || 'Login failed. Please check your credentials.');
     }
+  };
 
-    return (
-        <AuthContext.Provider value={value}>
-            {children}
-        </AuthContext.Provider>
-    )
-}
+  const register = async (userData) => {
+    console.log('Register function called with:', userData);
+    try {
+      const response = await axios.post('http://localhost:5000/api/auth/signup', {
+        fullName: userData.fullName,
+        email: userData.email,
+        password: userData.password,
+        phoneNo: userData.phoneNo,
+        designation: userData.designation
+      });
+      
+      console.log('Register response:', response.data);
+      
+      if (response.data.success) {
+        toast.success('Registration successful! Please login to continue.');
+        return { success: true, message: response.data.message || 'Registration successful' };
+      } else {
+        throw new Error(response.data.message || 'Registration failed');
+      }
+    } catch (error) {
+      console.error('Register error:', error);
+      toast.error(error.response?.data?.message || 'Registration failed. Please try again.');
+      throw new Error(error.response?.data?.message || 'Registration failed. Please try again.');
+    }
+  };
+
+  const logout = () => {
+    setUser(null);
+    setAuthUser(null);
+    setToken(null);
+    localStorage.removeItem('user');
+    localStorage.removeItem("token");
+    axios.defaults.headers.common["Authorization"] = null;
+    toast.success("Logged out successfully.");
+  };
+
+  const updateUserProfile = async (profileData) => {
+    console.log('Updating profile with data:', profileData);
+    try {
+      // Transform frontend data to backend format
+      const transformedData = {
+        fullName: profileData.fullName,
+        email: profileData.email,
+        bio: profileData.professionalSummary,
+        phoneNo: profileData.phone,
+        designation: profileData.designation,
+        profile: {
+          professionalHeadline: profileData.professionalTitle || '',
+          skills: profileData.keySkills || [],
+          professionalInterests: profileData.interests || [],
+          achievements: profileData.achievements || [],
+          experience: {
+            jobTitle: profileData.designation || '',
+            hospital: profileData.workingHospital || '',
+            duration: profileData.yearsOfExperience || '',
+            description: profileData.professionalSummary || ''
+          },
+          education: profileData.education && profileData.education.length > 0 ? {
+            degree: profileData.education[0]?.degree || '',
+            university: profileData.education[0]?.institution || '',
+            year: profileData.education[0]?.year || ''
+          } : {
+            degree: '',
+            university: '',
+            year: ''
+          },
+          certifications: profileData.certifications && profileData.certifications.length > 0 ? {
+            name: profileData.certifications[0]?.name || '',
+            issuingOrganization: profileData.certifications[0]?.organization || '',
+            validUntil: ''
+          } : {
+            name: '',
+            issuingOrganization: '',
+            validUntil: ''
+          }
+        }
+      };
+
+      const token = user?.token || localStorage.getItem("token");
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+
+      const response = await axios.put(
+        'http://localhost:5000/api/auth/update-profile',
+        transformedData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      console.log('Profile update response:', response.data);
+      
+      if (response.data.success) {
+        const backendUpdatedUser = response.data.user;
+        
+        // Update authUser for compatibility
+        setAuthUser(backendUpdatedUser);
+        
+        // Transform backend data to frontend format
+        const updatedUser = {
+          ...backendUpdatedUser,
+          token: token,
+          // Map backend fields to frontend expected fields
+          phone: backendUpdatedUser.phoneNo || '',
+          professionalSummary: backendUpdatedUser.bio || '',
+          profileImage: backendUpdatedUser.profilepic || null,
+          professionalTitle: backendUpdatedUser.profile?.professionalHeadline || '',
+          keySkills: backendUpdatedUser.profile?.skills || [],
+          workingHospital: backendUpdatedUser.profile?.experience?.hospital || '',
+          yearsOfExperience: backendUpdatedUser.profile?.experience?.duration || '',
+          interests: backendUpdatedUser.profile?.professionalInterests || [],
+          achievements: backendUpdatedUser.profile?.achievements || [],
+          // Transform nested objects to arrays for frontend
+          education: backendUpdatedUser.profile?.education ? [{
+            degree: backendUpdatedUser.profile.education.degree,
+            institution: backendUpdatedUser.profile.education.university,
+            year: backendUpdatedUser.profile.education.year,
+            id: Date.now()
+          }] : [],
+          certifications: backendUpdatedUser.profile?.certifications ? [{
+            name: backendUpdatedUser.profile.certifications.name,
+            organization: backendUpdatedUser.profile.certifications.issuingOrganization,
+            validUntil: backendUpdatedUser.profile.certifications.validUntil,
+            id: Date.now()
+          }] : [],
+          experience: backendUpdatedUser.profile?.experience ? [{
+            hospitalName: backendUpdatedUser.profile.experience.hospital,
+            duration: backendUpdatedUser.profile.experience.duration,
+            years: backendUpdatedUser.profile.experience.duration,
+            description: backendUpdatedUser.profile.experience.description,
+            jobTitle: backendUpdatedUser.profile.experience.jobTitle,
+            id: Date.now()
+          }] : []
+        };
+        
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        toast.success('Profile updated successfully!');
+        return updatedUser;
+      } else {
+        throw new Error(response.data.message || 'Profile update failed');
+      }
+    } catch (error) {
+      console.error('Profile update error:', error);
+      toast.error(error.response?.data?.message || 'Profile update failed. Please try again.');
+      throw new Error(error.response?.data?.message || 'Profile update failed. Please try again.');
+    }
+  };
+
+  // Update profile function for FormData (for Profile component)
+  const updateProfile = async (formData) => {
+    try {
+      console.log('Sending profile update request...');
+      
+      const token = localStorage.getItem("token");
+      const config = {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      };
+
+      console.log('Request config:', config);
+      console.log('FormData contents:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
+      }
+
+      const { data } = await axios.put("/api/auth/update-profile", formData, config);
+      
+      console.log('Response data:', data);
+      
+      if (data?.success && data?.user) {
+        toast.success("Profile Updated successfully");
+        setAuthUser(data.user);
+        
+        // If profile image was updated, update the user's profileImageUrl
+        if (data.user.profilepic || data.user.profileImageUrl) {
+          console.log('Updating profile image URL...');
+          setAuthUser(prev => ({
+            ...prev,
+            profilepic: data.user.profilepic || data.user.profileImageUrl,
+            profileImageUrl: data.user.profilepic || data.user.profileImageUrl
+          }));
+        }
+      } else {
+        toast.error(data.message || "Profile update failed");
+      }
+    } catch (error) {
+      console.error('Profile update error:', error);
+      const errorMessage = error.response?.data?.message || error.message || "Error updating profile";
+      toast.error(errorMessage);
+    }
+  };
+
+  const value = {
+    user,
+    token,
+    authUser,
+    login,
+    register,
+    logout,
+    updateUserProfile,
+    updateProfile,
+    isLoading
+  };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export { AuthContext };

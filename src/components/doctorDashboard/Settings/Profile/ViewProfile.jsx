@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { User, Briefcase, GraduationCap, Award, Video, Image, Heart, Home, Mail, Phone, MapPin, Calendar, Download, Play, FileText, X, ChevronRight, ArrowLeft, Clock, Star, ThumbsUp, MessageCircle, Share2, Linkedin, Twitter, Globe, CheckCircle, Users, TrendingUp, BookOpen, Target, Award as Trophy } from 'lucide-react';
 import './ViewProfile.css';
+import { AuthContext } from '../../../../context/AuthContext';
 
 const ViewProfile = ({ onMenuClick }) => {
+  const { authUser } = useContext(AuthContext);
   const [activeSection, setActiveSection] = useState('overview');
   const [selectedImage, setSelectedImage] = useState(null);
   const [isLiked, setIsLiked] = useState(false);
@@ -12,59 +14,59 @@ const ViewProfile = ({ onMenuClick }) => {
   const [activeTab, setActiveTab] = useState('about');
   const sidebarRef = useRef(null);
 
-  // Sample profile data - in real app, this would come from props or global state
+  // Real profile data from authUser
   const profileData = {
-    profileImage: '',
-    fullName: 'Dr. Sarah Johnson',
-    designation: 'Senior Cardiologist',
-    hospitalName: 'City Medical Center',
-    email: 'sarah.johnson@citymedical.com',
-    phone: '+1 (555) 123-4567',
-    bio: 'Dr. Sarah Johnson is a board-certified cardiologist with over 15 years of experience in treating complex heart conditions. She specializes in interventional cardiology and has performed over 2,000 cardiac procedures. Her research focuses on preventive cardiology and heart disease prevention in high-risk populations.',
-    totalExperience: 15,
-    workExperience: [
-      { id: 1, hospital: 'City Medical Center', duration: { from: '2018-01', to: 'Present' }, role: 'Senior Cardiologist' },
-      { id: 2, hospital: 'University Hospital', duration: { from: '2015-01', to: '2017-12' }, role: 'Interventional Cardiologist' },
-      { id: 3, hospital: 'Heart Institute', duration: { from: '2010-01', to: '2014-12' }, role: 'Cardiology Fellow' }
-    ],
-    education: [
-      { id: 1, degree: 'MD - Doctor of Medicine', university: 'Harvard Medical School', year: 2010 },
-      { id: 2, degree: 'Residency in Internal Medicine', university: 'Johns Hopkins Hospital', year: 2014 },
-      { id: 3, degree: 'Fellowship in Cardiology', university: 'Mayo Clinic', year: 2017 }
-    ],
-    achievements: [
-      { id: 1, name: 'Excellence in Cardiology Award', organization: 'American Heart Association', image: '' },
-      { id: 2, name: 'Top Doctor Award', organization: 'Castle Connolly', image: '' },
-      { id: 3, name: 'Research Innovation Prize', organization: 'Cardiology Research Foundation', image: '' }
-    ],
-    videos: [
-      { id: 1, title: 'Understanding Heart Disease Prevention', url: 'https://youtube.com/watch?v=example1' },
-      { id: 2, title: 'Latest Advances in Cardiac Treatment', url: 'https://youtube.com/watch?v=example2' }
-    ],
-    files: [
-      { id: 1, name: 'Medical Credentials.pdf', type: 'pdf' },
-      { id: 2, name: 'Research Publications.pdf', type: 'pdf' }
-    ],
-    gallery: [
-      { id: 1, url: '', caption: 'Speaking at Medical Conference 2023' },
-      { id: 2, url: '', caption: 'With Patients After Successful Procedure' },
-      { id: 3, url: '', caption: 'Research Team Collaboration' },
-      { id: 4, url: '', caption: 'Medical Award Ceremony' }
-    ],
-    interests: ['Cardiology', 'Medical Research', 'Teaching', 'Preventive Medicine', 'Heart Disease Prevention'],
-    // Enhanced profile data
+    profileImage: authUser?.profilepic || '',
+    fullName: authUser?.fullName || 'Dr. Name',
+    designation: authUser?.designation || 'Doctor',
+    hospitalName: authUser?.profile?.experience?.[0]?.hospital || 'Hospital Name',
+    email: authUser?.email || 'email@example.com',
+    phone: authUser?.phoneNo || '+1 (555) 123-4567',
+    bio: authUser?.bio || 'Doctor biography will be displayed here.',
+    totalExperience: authUser?.profile?.yearsOfExperience || 0,
+    workExperience: authUser?.profile?.experience ? authUser.profile.experience.map(exp => ({
+      id: exp._id || Date.now(),
+      hospital: exp.hospital || '',
+      duration: { from: exp.from || '', to: exp.to || '' },
+      role: authUser?.designation || 'Doctor'
+    })) : [],
+    education: authUser?.profile?.education ? [{
+      id: Date.now(),
+      degree: authUser.profile.education.degree || '',
+      university: authUser.profile.education.university || '',
+      year: authUser.profile.education.year || ''
+    }] : [],
+    achievements: authUser?.profile?.achievements ? [{
+      id: Date.now(),
+      name: authUser.profile.achievements.achievementsName || '',
+      organization: authUser.profile.achievements.issuingOrganization || '',
+      image: authUser.profile.achievements.achievementsImages || ''
+    }] : [],
+    videos: authUser?.profile?.mediaUpload ? authUser.profile.mediaUpload.map(video => ({
+      id: video._id || Date.now(),
+      title: 'Video Content',
+      url: video.Link || video.Video || ''
+    })) : [],
+    files: [], // Files are not stored in backend
+    gallery: authUser?.profile?.achievements?.achievementsImages ? [{
+      id: Date.now(),
+      url: authUser.profile.achievements.achievementsImages,
+      caption: 'Achievement Image'
+    }] : [],
+    interests: authUser?.profile?.Interests || [],
+    // Enhanced profile data with defaults
     stats: {
-      patientsTreated: 5000,
-      surgeriesPerformed: 1200,
-      researchPapers: 45,
-      awardsWon: 12,
-      yearsActive: 15,
-      satisfactionRate: 98
+      patientsTreated: 0,
+      surgeriesPerformed: 0,
+      researchPapers: 0,
+      awardsWon: authUser?.profile?.achievements ? 1 : 0,
+      yearsActive: authUser?.profile?.yearsOfExperience || 0,
+      satisfactionRate: 0
     },
     socialLinks: {
-      linkedin: 'https://linkedin.com/in/drsarahjohnson',
-      twitter: 'https://twitter.com/drsarahjohnson',
-      website: 'https://drsarahjohnson.com'
+      linkedin: '',
+      twitter: '',
+      website: ''
     },
     availability: {
       monday: '9:00 AM - 5:00 PM',
@@ -75,20 +77,11 @@ const ViewProfile = ({ onMenuClick }) => {
       saturday: 'Closed',
       sunday: 'Closed'
     },
-    specialties: ['Interventional Cardiology', 'Preventive Cardiology', 'Heart Disease Prevention', 'Cardiac Catheterization'],
-    languages: ['English', 'Spanish', 'French'],
-    certifications: [
-      { id: 1, name: 'Board Certified Cardiologist', issuer: 'American Board of Internal Medicine', year: 2015, expires: 2025 },
-      { id: 2, name: 'Advanced Cardiac Life Support', issuer: 'American Heart Association', year: 2023, expires: 2025 }
-    ],
-    publications: [
-      { id: 1, title: 'Advances in Interventional Cardiology', journal: 'Journal of Cardiology', year: 2023, citations: 45 },
-      { id: 2, title: 'Preventive Strategies in Heart Disease', journal: 'American Heart Journal', year: 2022, citations: 32 }
-    ],
-    testimonials: [
-      { id: 1, patient: 'John D.', rating: 5, comment: 'Dr. Johnson saved my life. Excellent care and expertise.', date: '2023-11-15' },
-      { id: 2, patient: 'Sarah M.', rating: 5, comment: 'Very professional and caring. Highly recommend!', date: '2023-10-28' }
-    ]
+    specialties: [authUser?.designation || 'General Practice'],
+    languages: ['English'],
+    certifications: [],
+    publications: [],
+    testimonials: []
   };
 
   const navigationItems = [
@@ -461,18 +454,7 @@ const ViewProfile = ({ onMenuClick }) => {
             ))}
           </div>
 
-          <div className="files-section">
-            <h3>Documents</h3>
-            <div className="files-list">
-              {profileData.files.map((file) => (
-                <div key={file.id} className="file-item">
-                  <FileText size={20} />
-                  <span>{file.name}</span>
-                  <Download size={16} />
-                </div>
-              ))}
-            </div>
-          </div>
+          
         </section>
 
         {/* Gallery Section */}

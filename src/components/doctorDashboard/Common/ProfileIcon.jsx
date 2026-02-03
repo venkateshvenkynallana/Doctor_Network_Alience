@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { User, LogOut, Edit, Settings } from 'lucide-react';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useAuth } from '../../../context/AuthContext';
 import './ProfileIcon.css';
 
 const ProfileIcon = ({ onMenuClick }) => {

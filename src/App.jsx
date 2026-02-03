@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import LandingPage from './components/LandingPage';
@@ -89,18 +89,18 @@ function AppContent({ showRegisterForm, showLoginForm, onLogin, onRegister, onCl
     return (
         <div>
             <LandingPage onLogin={onLogin} onRegister={onRegister} />
-            
+
             {showRegisterForm && (
-                <Register 
-                    onClose={onCloseRegister} 
+                <Register
+                    onClose={onCloseRegister}
                     onLogin={onLogin}
                     onLoginSuccess={handleLoginSuccess}
                 />
             )}
-            
+
             {showLoginForm && (
-                <Login 
-                    onClose={onCloseLogin} 
+                <Login
+                    onClose={onCloseLogin}
                     onRegister={onRegister}
                     onLoginSuccess={handleLoginSuccess}
                 />
