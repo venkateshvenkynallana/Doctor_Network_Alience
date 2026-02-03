@@ -56,7 +56,7 @@ export const Login = async (req, res) => {
         const isPassword = await bcrypt.compare(password, userData.password);
 
         if (!isPassword) {
-            res.status(409).json({ message: "Invalid credentials." });
+             return res.status(409).json({ message: "Invalid credentials." });
         }
 
         const token = generateToken(userData._id);
@@ -79,71 +79,104 @@ export const updateProfile = async (req, res) => {
     try {
         const userId = req.user._id;
 
-        const {
-            fullName,
-            email,
-            bio,
-            phoneNo,
-            designation,
-            profile
-        } = req.body || {}; // ✅ prevent crash
-
         const updateData = {};
 
+        console.log("req body update profile:---", req.body);
+
         // ===== basic fields =====
-        if (fullName) updateData.fullName = fullName;
-        if (email) updateData.email = email;
-        if (bio) updateData.bio = bio;
-        if (phoneNo) updateData.phoneNo = phoneNo;
-        if (designation) updateData.designation = designation;
+        if (req.body.fullName) updateData.fullName = req.body.fullName;
+        if (req.body.email) updateData.email = req.body.email;
+        if (req.body.bio) updateData.bio = req.body.bio;
+        if (req.body.phoneNo) updateData.phoneNo = req.body.phoneNo;
+        if (req.body.designation) updateData.designation = req.body.designation;
 
-        // ===== nested profile =====
-        if (profile) {
-            const parsedProfile =
-                typeof profile === "string" ? JSON.parse(profile) : profile;
+        // ===== years of experience =====
+        if (req.body.yearsOfExperience) {
+            updateData["profile.yearsOfExperience"] = req.body.yearsOfExperience;
+        }
 
-            if (parsedProfile.professionalHeadline)
-                updateData["profile.professionalHeadline"] =
-                    parsedProfile.professionalHeadline;
-
-            if (parsedProfile.skills)
-                updateData["profile.skills"] = parsedProfile.skills;
-
-            if (parsedProfile.experience) {
-                Object.entries(parsedProfile.experience).forEach(([key, value]) => {
-                    if (value)
-                        updateData[`profile.experience.${key}`] = value;
-                });
+        // ===== experience (parse JSON string) =====
+        if (req.body.experience) {
+            try {
+                const experienceData = JSON.parse(req.body.experience);
+                updateData["profile.experience"] = experienceData.map(exp => ({
+                    jobTitle: req.body.designation || "",
+                    hospital: exp.hospital || "",
+                    from: exp.duration?.from || "",
+                    to: exp.duration?.to || ""
+                }));
+            } catch (e) {
+                console.error("Error parsing experience:", e);
             }
+        }
 
-            if (parsedProfile.education) {
-                Object.entries(parsedProfile.education).forEach(([key, value]) => {
-                    if (value)
-                        updateData[`profile.education.${key}`] = value;
-                });
+        // ===== education (parse JSON string) =====
+        if (req.body.education) {
+            try {
+                const educationData = JSON.parse(req.body.education);
+                if (educationData.length > 0) {
+                    const edu = educationData[0]; // Take first education entry
+                    updateData["profile.education"] = {
+                        degree: edu.degree || "",
+                        university: edu.university || "",
+                        year: edu.year || ""
+                    };
+                }
+            } catch (e) {
+                console.error("Error parsing education:", e);
             }
+        }
 
-            if (parsedProfile.certifications) {
-                Object.entries(parsedProfile.certifications).forEach(([key, value]) => {
-                    if (value)
-                        updateData[`profile.certifications.${key}`] = value;
-                });
+        // ===== achievements (parse JSON string) =====
+        if (req.body.achievements) {
+            try {
+                const achievementsData = JSON.parse(req.body.achievements);
+                if (achievementsData.length > 0) {
+                    const ach = achievementsData[0]; // Take first achievement entry
+                    updateData["profile.achievements"] = {
+                        achievementsName: ach.name || "",
+                        issuingOrganization: ach.organization || "",
+                        achievementsImages: ""
+                    };
+                }
+            } catch (e) {
+                console.error("Error parsing achievements:", e);
             }
+        }
 
-            if (parsedProfile.professionalInterests)
-                updateData["profile.professionalInterests"] = parsedProfile.professionalInterests;
+        // ===== interests (parse JSON string) =====
+        if (req.body.interests) {
+            try {
+                const interestsData = JSON.parse(req.body.interests);
+                updateData["profile.Interests"] = interestsData;
+            } catch (e) {
+                console.error("Error parsing interests:", e);
+            }
+        }
 
-            if (parsedProfile.achievements)
-                updateData["profile.achievements"] = parsedProfile.achievements;
+        // ===== videos/mediaUpload (parse JSON string) =====
+        if (req.body.videos) {
+            try {
+                const videosData = JSON.parse(req.body.videos);
+                updateData["profile.mediaUpload"] = videosData.map(video => ({
+                    Link: video.url || "",
+                    Video: video.url || "",
+                    date: new Date().toISOString().split('T')[0]
+                }));
+            } catch (e) {
+                console.error("Error parsing videos:", e);
+            }
         }
 
         // ===== image upload via multer =====
         if (req.file) {
             const uploadResult = await cloudinary.uploader.upload(
-                `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`
+                `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}` 
             );
             updateData.profilepic = uploadResult.secure_url;
         }
+
+        console.log("Final updateData:", updateData);
 
         const updatedUser = await User.findByIdAndUpdate(
             userId,
@@ -153,7 +186,7 @@ export const updateProfile = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            updatedUser,
+            user: updatedUser,
             message: "Profile updated successfully"
         });
 
@@ -180,7 +213,7 @@ export const forgotPassword = async (req, res) => {
         const otp = Math.floor(100000 + Math.random() * 900000);
 
         user.resetOtp = otp;
-        user.otpExpire = Date.now() + 10 * 60 * 1000; // ✅ 10 minutes
+        user.otpExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
 
         await user.save();
 
