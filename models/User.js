@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema({
     },
 
     profile: {
-        professionalHeadline: {
+        yearsOfExperience: {
             type: String,
             default: ""
         },
@@ -42,12 +42,15 @@ const userSchema = new mongoose.Schema({
             type: [String],
             default: []
         },
-        experience: {
-            jobTitle: { type: String, default: "" },
-            hospital: { type: String, default: "" },
-            duration: { type: String, default: "" },
-            description: { type: String, default: "" }
-        },
+        experience: [
+            {
+                jobTitle: { type: String, default: "" },
+                hospital: { type: String, default: "" },
+                from: { type: String, default: "" },
+                to: { type: String, default: "" }
+            }
+        ],
+
 
         education: {
             degree: { type: String, default: "" },
@@ -55,18 +58,18 @@ const userSchema = new mongoose.Schema({
             year: { type: String, default: "" }
         },
 
-        certifications: {
-            name: { type: String, default: "" },
+        achievements: {
+            achievementsName: { type: String, default: "" },
             issuingOrganization: { type: String, default: "" },
-            validUntil: { type: String, default: "" }
+            achievementsImages: { type: String, default: "" }
         },
-        professionalInterests: {
+        Interests: {
             type: [String],
             default: []
         },
-        achievements: [{
-            title: { type: String, default: "" },
-            organization: { type: String, default: "" },
+        mediaUpload: [{
+            Link: { type: String, default: "" },
+            Video: { type: String, default: "" },
             date: { type: String, default: "" }
         }]
     },
