@@ -8,7 +8,7 @@ import { AuthContext } from '../../../../context/AuthContext';
 
 
 
-const Profile = ({ onMenuClick }) => {
+const Profile = ({ onMenuClick }) =>  {
 
   
   const {updateProfile, authUser} = useContext(AuthContext);
