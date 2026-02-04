@@ -221,7 +221,8 @@ const Dashboard = () => {
           {activeMenuItem === 'Network > Groups' && <Network />}
           {activeMenuItem === 'Network > Messages' && <Network />}
           {activeMenuItem === 'Settings' && <Settings />}
-          {activeMenuItem === 'Settings > Profile' && <Profile onMenuClick={handleMenuClick} />}
+          {activeMenuItem === 'Settings > Profile' && <ViewProfile onMenuClick={handleMenuClick} />}
+          {activeMenuItem === 'Settings > Edit Profile' && <Profile onMenuClick={handleMenuClick} />}
           {activeMenuItem === 'Settings > View Profile' && <ViewProfile onMenuClick={handleMenuClick} />}
           {activeMenuItem === 'Settings > Privacy' && <Privacy />}
           {activeMenuItem === 'Settings > Notifications' && <Notifications />}
