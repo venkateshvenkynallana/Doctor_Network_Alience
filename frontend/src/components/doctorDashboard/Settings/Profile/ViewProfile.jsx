@@ -257,7 +257,7 @@ const ViewProfile = ({ onMenuClick }) => {
                         allowFullScreen
                         className="video-iframe"
                       />
-                    ) : (
+                    ) : ( 
                       <video controls className="video-element">
                         <source src={profileData.introVideo} type="video/mp4" />
                         Your browser does not support the video tag.
