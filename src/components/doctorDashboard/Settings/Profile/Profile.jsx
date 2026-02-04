@@ -8,7 +8,7 @@ import { AuthContext } from '../../../../context/AuthContext';
 
 
 
-const Profile = ({ onMenuClick }) => {
+const Profile = ({ onMenuClick }) =>  {
 
   
   const {updateProfile, authUser} = useContext(AuthContext);
@@ -32,6 +32,8 @@ const Profile = ({ onMenuClick }) => {
     hospitalName: '',
 
     totalExperience: '',
+
+    introVideo: '',
 
     workExperience: [],
 
@@ -85,6 +87,7 @@ const Profile = ({ onMenuClick }) => {
         designation: authUser.designation || '',
         hospitalName: '',
         totalExperience: authUser.profile?.yearsOfExperience || '',
+        introVideo: authUser.profile?.introVideo || '',
         workExperience: authUser.profile?.experience ? authUser.profile.experience.map(exp => ({
           id: exp._id || Date.now(),
           hospital: exp.hospital || '',
@@ -601,6 +604,8 @@ const Profile = ({ onMenuClick }) => {
 
   formData.append("yearsOfExperience", profileData.totalExperience);
 
+  formData.append("introVideo", profileData.introVideo);
+
 
 
   // Profile image
@@ -834,6 +839,30 @@ const Profile = ({ onMenuClick }) => {
               rows={4}
 
             />
+
+          </div>
+
+          <div className="form-group full-width">
+
+            <label>Intro Video URL</label>
+
+            <input
+
+              type="url"
+
+              name="introVideo"
+
+              value={profileData.introVideo || ''}
+
+              onChange={handleInputChange}
+
+              placeholder="https://youtube.com/watch?v=..."
+
+              className="intro-video-input"
+
+            />
+
+            <small className="input-hint">Add a YouTube or Vimeo video link to introduce yourself</small>
 
           </div>
 
@@ -1515,7 +1544,7 @@ const Profile = ({ onMenuClick }) => {
 
           className="view-profile-btn"
 
-          onClick={() => onMenuClick('Settings > View Profile')}
+          onClick={() => onMenuClick('Settings > Profile')}
 
         >
 

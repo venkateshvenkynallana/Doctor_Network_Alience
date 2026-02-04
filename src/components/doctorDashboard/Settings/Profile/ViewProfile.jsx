@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { User, Briefcase, GraduationCap, Award, Video, Image, Heart, Home, Mail, Phone, MapPin, Calendar, Download, Play, FileText, X, ChevronRight, ArrowLeft, Clock, Star, ThumbsUp, MessageCircle, Share2, Linkedin, Twitter, Globe, CheckCircle, Users, TrendingUp, BookOpen, Target, Award as Trophy } from 'lucide-react';
+import { User, Briefcase, GraduationCap, Award, Video, Image, Heart, Home, Mail, Phone, MapPin, Calendar, Download, Play, FileText, X, ChevronRight, ArrowLeft, Clock, Star, ThumbsUp, MessageCircle, Share2, Linkedin, Twitter, Globe, CheckCircle, Users, TrendingUp, BookOpen, Target, Award as Trophy, Edit } from 'lucide-react';
 import './ViewProfile.css';
 import { AuthContext } from '../../../../context/AuthContext';
 
@@ -23,6 +23,7 @@ const ViewProfile = ({ onMenuClick }) => {
     email: authUser?.email || 'email@example.com',
     phone: authUser?.phoneNo || '+1 (555) 123-4567',
     bio: authUser?.bio || 'Doctor biography will be displayed here.',
+    introVideo: authUser?.profile?.introVideo || 'https://www.youtube.com/watch?v=9XFXPFjNZEc&pp=ygUIaGk5IDIwMjI%3D',
     totalExperience: authUser?.profile?.yearsOfExperience || 0,
     workExperience: authUser?.profile?.experience ? authUser.profile.experience.map(exp => ({
       id: exp._id || Date.now(),
@@ -136,6 +137,10 @@ const ViewProfile = ({ onMenuClick }) => {
     onMenuClick('Settings > Profile'); // Go back to Profile page
   };
 
+  const handleEditProfile = () => {
+    onMenuClick('Settings > Edit Profile'); // Go to Profile edit page
+  };
+
   const handleLike = () => {
     setIsLiked(!isLiked);
     setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
@@ -154,29 +159,16 @@ const ViewProfile = ({ onMenuClick }) => {
     // Show toast notification
   };
 
+  const getYouTubeVideoId = (url) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
   return (
     <div className="view-profile-container">
       {/* Sidebar */}
       <aside className="sidebar" ref={sidebarRef}>
-        {/* Back Button */}
-        <button className="back-button" onClick={handleBackToDashboard}>
-          <ArrowLeft size={20} />
-          <span>Back to Dashboard</span>
-        </button>
-        
-        <div className="sidebar-header">
-          <div className="profile-image-container">
-            {profileData.profileImage ? (
-              <img src={profileData.profileImage} alt="Profile" className="profile-image" />
-            ) : (
-              <div className="profile-image-placeholder">
-                <User size={64} />
-              </div>
-            )}
-          </div>
-          <h2 className="doctor-name">{profileData.fullName}</h2>
-          <p className="doctor-designation">{profileData.designation}</p>
-        </div>
 
         <nav className="sidebar-nav">
           {navigationItems.map((item) => {
@@ -201,13 +193,56 @@ const ViewProfile = ({ onMenuClick }) => {
         {/* Overview Section */}
         <section id="overview" className="content-section">
           <div className="section-header">
-            <h1 className="section-title">{profileData.fullName}</h1>
-            <p className="section-subtitle">{profileData.designation}</p>
+            <div className="profile-header-row">
+              <div className="sidebar-header">
+                <div className="profile-image-container">
+                  {profileData.profileImage ? (
+                    <img src={profileData.profileImage} alt="Profile" className="profile-image" />
+                  ) : (
+                    <div className="profile-image-placeholder">
+                      <User size={64} />
+                    </div>
+                  )}
+                </div>
+                <div className="profile-text-info">
+                  <h2 className="doctor-name">{profileData.fullName}</h2>
+                  <p className="doctor-designation">{profileData.designation}</p>
+                </div>
+              </div>
+              
+              {/* Intro Video */}
+              {profileData.introVideo && (
+                <div className="intro-video-container">
+                 
+                  <div className="video-player">
+                    {profileData.introVideo.includes('youtube.com') || profileData.introVideo.includes('youtu.be') ? (
+                      <iframe
+                        src={`https://www.youtube.com/embed/${getYouTubeVideoId(profileData.introVideo)}`}
+                        title="Intro Video"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="video-iframe"
+                      />
+                    ) : (
+                      <video controls className="video-element">
+                        <source src={profileData.introVideo} type="video/mp4" />
+                        Your browser does not support the video tag.
+                      </video>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Profile Actions */}
           <div className="profile-actions">
             <div className="action-buttons">
+              <button className="edit-profile-button" onClick={handleEditProfile}>
+                <Edit size={20} />
+                <span>Edit Profile</span>
+              </button>
               <button className={`like-button ${isLiked ? 'liked' : ''}`} onClick={handleLike}>
                 <ThumbsUp size={20} />
                 <span>{likeCount}</span>
@@ -297,33 +332,16 @@ const ViewProfile = ({ onMenuClick }) => {
             <User size={32} />
             <h2 className="section-title">About</h2>
           </div>
-          
+
           {/* Tab Navigation */}
           <div className="tab-navigation">
-            <button 
+            <button
               className={`tab-button ${activeTab === 'about' ? 'active' : ''}`}
               onClick={() => setActiveTab('about')}
             >
               Biography
             </button>
-            <button 
-              className={`tab-button ${activeTab === 'specialties' ? 'active' : ''}`}
-              onClick={() => setActiveTab('specialties')}
-            >
-              Specialties
-            </button>
-            <button 
-              className={`tab-button ${activeTab === 'languages' ? 'active' : ''}`}
-              onClick={() => setActiveTab('languages')}
-            >
-              Languages
-            </button>
-            <button 
-              className={`tab-button ${activeTab === 'availability' ? 'active' : ''}`}
-              onClick={() => setActiveTab('availability')}
-            >
-              Availability
-            </button>
+            
           </div>
 
           <div className="tab-content">
