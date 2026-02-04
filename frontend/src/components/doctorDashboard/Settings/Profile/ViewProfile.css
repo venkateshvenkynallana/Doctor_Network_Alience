@@ -25,6 +25,82 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* Profile Actions - Top Right */
+.profile-actions-top-right {
+     margin: -16px;
+    position: fixed;
+    margin-top: -40px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    max-width: 9%;
+    gap: 8px;
+    z-index: 1000;
+}
+
+.profile-actions-top-right .edit-profile-button,
+.profile-actions-top-right .like-button,
+.profile-actions-top-right .share-button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 15px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  color: #374151;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.profile-actions-top-right .edit-profile-button:hover,
+.profile-actions-top-right .like-button:hover,
+.profile-actions-top-right .share-button:hover {
+  background: #d83131;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.profile-actions-top-right .share-container {
+  position: relative;
+  width: 100%;
+}
+
+.profile-actions-top-right .share-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 5px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  min-width: 150px;
+}
+
+.profile-actions-top-right .share-dropdown button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  color: #374151;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.profile-actions-top-right .share-dropdown button:hover {
+  background: #f3f4f6;
+}
+
 .action-buttons {
   display: flex;
   gap: 1rem;
@@ -333,20 +409,21 @@
   margin-bottom: 3rem;
 }
 
-.profile-image-container {
-  width: 220px;
-  height: 220px;
-  margin: 0 auto 1.5rem;
-  position: relative;
+.profile-image-container
+ {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto rem;
+    position: relative;
 }
 
 .profile-image {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 4px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgb(148 14 14);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 .profile-image-placeholder {
@@ -381,8 +458,8 @@
 .profile-header-row {
   display: flex;
   align-items: flex-start;
-  gap: 3rem;
-  margin-bottom: 1rem;
+  gap: 1rem;
+  margin-bottom: -30px;
   max-width: 100%;
 }
 
@@ -400,7 +477,29 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     /* min-height: 350px; */
     justify-content: center;
-    max-width: 30%;
+    max-width: 35%;
+    position: relative;
+}
+
+.sidebar-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url("../../../../assets/doctor-doodle.svg");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    opacity: 0.1;
+    border-radius: 16px;
+    z-index: 0;
+}
+
+.sidebar-header > * {
+    position: relative;
+    z-index: 1;
 }
 
 .profile-text-info {
@@ -412,7 +511,7 @@
 
 /* Intro Video Container */
 .intro-video-container {
-  margin-top: 0;
+  margin-top: 15px;
   text-align: center;
   flex: 1;
   max-width: 600px;
@@ -502,19 +601,19 @@
 
 /* Main Content */
 .main-content {
-  flex: 1;
-
-  overflow-y: auto;
-  background: #f8fafc;
-  max-width: 1000px;
-  margin: 0 auto;
-  margin-right: 200px;
+    flex: 1;
+    overflow-y: auto;
+    background: #f8fafc;
+    max-width: 850px;
+    margin: 0 auto;
+    margin-right: 90px;
 }
 
 .content-section {
   margin-bottom: 2rem;
   opacity: 0;
   animation: fadeInUp 0.8s ease forwards;
+  margin-top: -30px;
 }
 
 .content-section:nth-child(1) { animation-delay: 0.1s; }
@@ -531,6 +630,13 @@
     align-items: center;
     gap: 1rem;
     margin-bottom: 0.5rem;
+}
+
+/* Specific styling for sections with icons */
+.content-section:not(#overview) .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
 .section-header svg {
@@ -554,22 +660,22 @@
 /* Overview Section */
 .overview-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
   margin-bottom: 1rem;
 }
 
 .overview-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  padding: 2rem;
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  min-height: 120px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 12.5px;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    min-height: 90px;
 }
 
 .overview-card:hover {
