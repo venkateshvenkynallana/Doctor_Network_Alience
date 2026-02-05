@@ -4,9 +4,10 @@ import { useAuth } from '../../../context/AuthContext';
 import './ProfileIcon.css';
 
 const ProfileIcon = ({ onMenuClick }) => {
+  
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const { user, logout } = useAuth();
+  const { authUser, logout } = useAuth();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -42,9 +43,9 @@ const ProfileIcon = ({ onMenuClick }) => {
         onClick={() => setIsOpen(!isOpen)}
         className="profile-button"
       >
-        {user?.profileImage ? (
+        {authUser?.profileImage ? (
           <img
-            src={user.profileImage}
+            src={authUser.profileImage}
             alt="Profile"
             className="profile-avatar"
           />
@@ -54,7 +55,7 @@ const ProfileIcon = ({ onMenuClick }) => {
           </div>
         )}
         <span className="profile-name">
-          {user?.fullName || user?.email || 'User'}
+          {authUser?.fullName || authUser?.email || 'User'}
         </span>
         <svg
           className={`profile-dropdown-arrow ${isOpen ? 'open' : ''}`}
@@ -74,8 +75,8 @@ const ProfileIcon = ({ onMenuClick }) => {
       {isOpen && (
         <div className="profile-dropdown">
           <div className="profile-dropdown-header">
-            <p className="profile-dropdown-name">{user?.fullName || 'User'}</p>
-            <p className="profile-dropdown-email">{user?.email || 'user@example.com'}</p>
+            <p className="profile-dropdown-name">{authUser?.fullName || 'User'}</p>
+            <p className="profile-dropdown-email">{authUser?.email || 'user@example.com'}</p>
           </div>
           
           <button
