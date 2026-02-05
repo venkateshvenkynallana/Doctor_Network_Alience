@@ -33,6 +33,8 @@ export const signUp = async (req, res) => {
             bio,
             phoneNo,
             designation,
+            phoneNo,
+            designation,
         });
 
         const token = generateToken(newUser._id);
@@ -56,7 +58,7 @@ export const Login = async (req, res) => {
         const isPassword = await bcrypt.compare(password, userData.password);
 
         if (!isPassword) {
-             return res.status(409).json({ message: "Invalid credentials." });
+            return res.status(409).json({ message: "Invalid credentials." });
         }
 
         const token = generateToken(userData._id);
@@ -93,6 +95,10 @@ export const updateProfile = async (req, res) => {
         // ===== years of experience =====
         if (req.body.yearsOfExperience) {
             updateData["profile.yearsOfExperience"] = req.body.yearsOfExperience;
+        }
+
+        if (req.body.introVideo) {
+            updateData["profile.introVideo"] = req.body.introVideo;
         }
 
         // ===== experience (parse JSON string) =====
@@ -145,36 +151,62 @@ export const updateProfile = async (req, res) => {
         }
 
         // ===== interests (parse JSON string) =====
-        if (req.body.interests) {
-            try {
-                const interestsData = JSON.parse(req.body.interests);
-                updateData["profile.Interests"] = interestsData;
-            } catch (e) {
-                console.error("Error parsing interests:", e);
-            }
-        }
+        // if (req.body.interests) {
+        //     try {
+        //         const interestsData = JSON.parse(req.body.interests);
+        //         updateData["profile.Interests"] = interestsData;
+        //     } catch (e) {
+        //         console.error("Error parsing interests:", e);
+        //     }
+        // }
 
         // ===== videos/mediaUpload (parse JSON string) =====
-        if (req.body.videos) {
+        if (req.body.mediaUpload) {
             try {
-                const videosData = JSON.parse(req.body.videos);
-                updateData["profile.mediaUpload"] = videosData.map(video => ({
-                    Link: video.url || "",
-                    Video: video.url || "",
-                    date: new Date().toISOString().split('T')[0]
-                }));
+                const videos = Array.isArray(req.body.mediaUpload)
+                    ? req.body.mediaUpload
+                    : [req.body.mediaUpload];
+
+                updateData["profile.mediaUpload"] = videos.map(v =>
+                    typeof v === "string" ? JSON.parse(v) : v
+                );
             } catch (e) {
                 console.error("Error parsing videos:", e);
             }
         }
 
-        // ===== image upload via multer =====
-        if (req.file) {
-            const uploadResult = await cloudinary.uploader.upload(
-                `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}` 
-            );
-            updateData.profilepic = uploadResult.secure_url;
+        // ===== gallery images (AFTER videos) =====
+        if (req.files?.mediaUploadImages) {
+            const uploadedImages = [];
+
+            for (const file of req.files.mediaUploadImages) {
+                const upload = await cloudinary.uploader.upload(
+                    `data:${file.mimetype};base64,${file.buffer.toString("base64")}`
+                );
+
+                uploadedImages.push({
+                    type: "image",
+                    url: upload.secure_url,
+                    date: new Date().toISOString().split("T")[0]
+                });
+            }
+
+            updateData["profile.mediaUpload"] = [
+                ...(updateData["profile.mediaUpload"] || []),
+                ...uploadedImages
+            ];
         }
+
+
+
+
+        // // ===== image upload via multer =====
+        // if (req.file) {
+        //     const uploadResult = await cloudinary.uploader.upload(
+        //         `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`
+        //     );
+        //     updateData.profilepic = uploadResult.secure_url;
+        // }
 
         console.log("Final updateData:", updateData);
 
@@ -191,6 +223,8 @@ export const updateProfile = async (req, res) => {
         });
 
     } catch (error) {
+        console.error("update profile error", error);
+        res.status(500).json({ message: error.message });
         console.error("update profile error", error);
         res.status(500).json({ message: error.message });
     }
@@ -214,6 +248,7 @@ export const forgotPassword = async (req, res) => {
 
         user.resetOtp = otp;
         user.otpExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
+        user.otpExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
 
         await user.save();
 
@@ -222,12 +257,15 @@ export const forgotPassword = async (req, res) => {
         console.log("SMTP_PASS:", process.env.SMTP_PASS ? "SET" : "NOT SET");
 
 
-        await transporter.sendMail({
-            from: `"DNA Support" <${process.env.SMTP_USER}>`,
-            to: email,
-            subject: "Password Reset OTP",
-            text: `Your OTP is ${otp}. Valid for 5 minutes.`
-        });
+        const mailOptions = {
+            from: `DNA Support <${process.env.SMTP_USER}>`,
+            to: user.email,
+            subject: "Verify your email",
+            html: `<p>Your OTP is <b>${otp}</b></p>`
+        };
+
+
+        await transporter.sendMail(mailOptions);
 
         res.status(200).json({ message: "OTP sent to email " });
     } catch (error) {

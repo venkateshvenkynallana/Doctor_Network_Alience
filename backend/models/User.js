@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 const userSchema = new mongoose.Schema({
     email: {
         type: String,
+        type: String,
         required: true,
         unique: true
     },
@@ -24,6 +25,7 @@ const userSchema = new mongoose.Schema({
         default: ""
     },
     phoneNo: {
+    phoneNo: {
         type: String,
         required: true,
 
@@ -38,10 +40,15 @@ const userSchema = new mongoose.Schema({
             type: String,
             default: ""
         },
-        skills: {
-            type: [String],
-            default: []
+        // skills: {
+        //     type: [String],
+        //     default: []
+        // },
+        introVideo: {
+            type: String,
+            default: ""
         },
+
         experience: [
             {
                 jobTitle: { type: String, default: "" },
@@ -60,25 +67,28 @@ const userSchema = new mongoose.Schema({
 
         achievements: {
             achievementsName: { type: String, default: "" },
-            issuingOrganization: { type: String, default: "" },
-            achievementsImages: { type: String, default: "" }
+            issuingOrganization: { type: String, default: "" }
         },
         Interests: {
             type: [String],
             default: []
         },
-        mediaUpload: [{
-            Link: { type: String, default: "" },
-            Video: { type: String, default: "" },
-            date: { type: String, default: "" }
-        }]
+        mediaUpload: [
+            {
+                type: { type: String }, // "video" | "image"
+                url: { type: String },
+                date: { type: String }
+            }
+        ]
+
     },
     //otp for reset password
     resetOtp: Number,
 
+
     otpExpire: Date,
 
-}, { timestamps: true })
+}}, { timestamps: true });
 
 const user = mongoose.model("User", userSchema);
 
