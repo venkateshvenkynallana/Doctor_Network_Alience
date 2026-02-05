@@ -6,12 +6,12 @@ import transporter from "../lib/mailer.js";
 
 
 //Sign up form
-export const signUp = async (req, res) => { 
+export const signUp = async (req, res) => {
 
-    const { fullName, email, password, bio, number } = req.body;
+    const { fullName, email, password, bio, phoneNo, designation } = req.body;
 
     try {
-        if (!fullName || !email || !password || !number) {
+        if (!fullName || !email || !password || !phoneNo || !designation) {
             return res.status(400).json({ message: "fields are missing." });
         }
 
@@ -31,7 +31,8 @@ export const signUp = async (req, res) => {
             email,
             password: hashedPassword,
             bio,
-            number
+            phoneNo,
+            designation,
         });
 
         const token = generateToken(newUser._id);
@@ -55,7 +56,7 @@ export const Login = async (req, res) => {
         const isPassword = await bcrypt.compare(password, userData.password);
 
         if (!isPassword) {
-            res.status(409).json({ message: "Invalid credentials." });
+            return res.status(409).json({ message: "Invalid credentials." });
         }
 
         const token = generateToken(userData._id);
@@ -76,30 +77,156 @@ export const checkAuth = async (req, res) => {
 //controller update user profile details
 export const updateProfile = async (req, res) => {
     try {
-        const { profilepic, fullName, bio, number } = req.body;
-
         const userId = req.user._id;
 
-        let updatedUser;
+        const updateData = {};
 
-        if (!profilepic) {
-            updatedUser = await User.findByIdAndUpdate(userId, { bio, fullName, number }, { new: true });
-        } else {
-            const upload = await cloudinary.uploader.upload(profilepic);
+        console.log("req body update profile:---", req.body);
 
-            updatedUser = await User.findByIdAndUpdate(userId, {
-                profilepic: upload.secure_url,
-                fullName,
-                bio,
-                number
-            }, { new: true });
-            res.status(200).json({ success: true, updatedUser, message: "updated successfully." });
+        // ===== basic fields =====
+        if (req.body.fullName) updateData.fullName = req.body.fullName;
+        if (req.body.email) updateData.email = req.body.email;
+        if (req.body.bio) updateData.bio = req.body.bio;
+        if (req.body.phoneNo) updateData.phoneNo = req.body.phoneNo;
+        if (req.body.designation) updateData.designation = req.body.designation;
+
+        // ===== years of experience =====
+        if (req.body.yearsOfExperience) {
+            updateData["profile.yearsOfExperience"] = req.body.yearsOfExperience;
         }
+
+        if (req.body.introVideo) {
+            updateData["profile.introVideo"] = req.body.introVideo;
+        }
+
+        // ===== experience (parse JSON string) =====
+        if (req.body.experience) {
+            try {
+                const experienceData = JSON.parse(req.body.experience);
+                updateData["profile.experience"] = experienceData.map(exp => ({
+                    jobTitle: req.body.designation || "",
+                    hospital: exp.hospital || "",
+                    from: exp.duration?.from || "",
+                    to: exp.duration?.to || ""
+                }));
+            } catch (e) {
+                console.error("Error parsing experience:", e);
+            }
+        }
+
+        // ===== education (parse JSON string) =====
+        if (req.body.education) {
+            try {
+                const educationData = JSON.parse(req.body.education);
+                if (educationData.length > 0) {
+                    const edu = educationData[0]; // Take first education entry
+                    updateData["profile.education"] = {
+                        degree: edu.degree || "",
+                        university: edu.university || "",
+                        year: edu.year || ""
+                    };
+                }
+            } catch (e) {
+                console.error("Error parsing education:", e);
+            }
+        }
+
+        // ===== achievements (parse JSON string) =====
+        if (req.body.achievements) {
+            try {
+                const achievementsData = JSON.parse(req.body.achievements);
+                if (achievementsData.length > 0) {
+                    const ach = achievementsData[0]; // Take first achievement entry
+                    updateData["profile.achievements"] = {
+                        achievementsName: ach.name || "",
+                        issuingOrganization: ach.organization || "",
+                        achievementsImages: ""
+                    };
+                }
+            } catch (e) {
+                console.error("Error parsing achievements:", e);
+            }
+        }
+
+        // ===== interests (parse JSON string) =====
+        // if (req.body.interests) {
+        //     try {
+        //         const interestsData = JSON.parse(req.body.interests);
+        //         updateData["profile.Interests"] = interestsData;
+        //     } catch (e) {
+        //         console.error("Error parsing interests:", e);
+        //     }
+        // }
+
+        // ===== videos/mediaUpload (parse JSON string) =====
+        if (req.body.mediaUpload) {
+            try {
+                const videos = Array.isArray(req.body.mediaUpload)
+                    ? req.body.mediaUpload
+                    : [req.body.mediaUpload];
+
+                updateData["profile.mediaUpload"] = videos.map(v =>
+                    typeof v === "string" ? JSON.parse(v) : v
+                );
+            } catch (e) {
+                console.error("Error parsing videos:", e);
+            }
+        }
+
+        // ===== gallery images (AFTER videos) =====
+        if (req.files?.mediaUploadImages) {
+            const uploadedImages = [];
+
+            for (const file of req.files.mediaUploadImages) {
+                const upload = await cloudinary.uploader.upload(
+                    `data:${file.mimetype};base64,${file.buffer.toString("base64")}`
+                );
+
+                uploadedImages.push({
+                    type: "image",
+                    url: upload.secure_url,
+                    date: new Date().toISOString().split("T")[0]
+                });
+            }
+
+            updateData["profile.mediaUpload"] = [
+                ...(updateData["profile.mediaUpload"] || []),
+                ...uploadedImages
+            ];
+        }
+
+
+
+
+        // // ===== image upload via multer =====
+        // if (req.file) {
+        //     const uploadResult = await cloudinary.uploader.upload(
+        //         `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`
+        //     );
+        //     updateData.profilepic = uploadResult.secure_url;
+        // }
+
+        console.log("Final updateData:", updateData);
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
+
+        res.status(200).json({
+            success: true,
+            user: updatedUser,
+            message: "Profile updated successfully"
+        });
+
     } catch (error) {
-        console.log("update profile error", error);
-        res.status(200).json({ message: error.message });
+        console.error("update profile error", error);
+        res.status(500).json({ message: error.message });
     }
-}
+};
+
+
 
 //controller to handle forgot password
 export const forgotPassword = async (req, res) => {
@@ -116,7 +243,7 @@ export const forgotPassword = async (req, res) => {
         const otp = Math.floor(100000 + Math.random() * 900000);
 
         user.resetOtp = otp;
-        user.otpExpire = Date.now() + 10 * 60 * 1000; // ✅ 10 minutes
+        user.otpExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
 
         await user.save();
 
@@ -125,12 +252,15 @@ export const forgotPassword = async (req, res) => {
         console.log("SMTP_PASS:", process.env.SMTP_PASS ? "SET" : "NOT SET");
 
 
-        await transporter.sendMail({
-            from: `"DNA Support" <${process.env.SMTP_USER}>`,
-            to: email,
-            subject: "Password Reset OTP",
-            text: `Your OTP is ${otp}. Valid for 5 minutes.`
-        });
+        const mailOptions = {
+            from: `DNA Support <${process.env.SMTP_USER}>`,
+            to: user.email,
+            subject: "Verify your email",
+            html: `<p>Your OTP is <b>${otp}</b></p>`
+        };
+
+
+        await transporter.sendMail(mailOptions);
 
         res.status(200).json({ message: "OTP sent to email " });
     } catch (error) {
