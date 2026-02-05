@@ -7,13 +7,10 @@ import transporter from "../lib/mailer.js";
 
 //Sign up form
 export const signUp = async (req, res) => {
-export const signUp = async (req, res) => {
 
-    const { fullName, email, password, bio, phoneNo, designation } = req.body;
     const { fullName, email, password, bio, phoneNo, designation } = req.body;
 
     try {
-        if (!fullName || !email || !password || !phoneNo || !designation) {
         if (!fullName || !email || !password || !phoneNo || !designation) {
             return res.status(400).json({ message: "fields are missing." });
         }
@@ -231,9 +228,6 @@ export const updateProfile = async (req, res) => {
         console.error("update profile error", error);
         res.status(500).json({ message: error.message });
     }
-};
-
-
 };
 
 
