@@ -16,8 +16,11 @@ import Security from '../Settings/Security/Security';
 import CompactProfileWidget from './CompactProfileWidget/CompactProfileWidget';
 import { FileText, Menu, X, Users, Calendar, User, Settings as SettingsIcon } from 'lucide-react';
 import './Dashboard.css';
+import { useAuth } from '../../../context/AuthContext';
 
 const Dashboard = () => {
+
+  const { authUser } = useAuth();
   const [activeMenuItem, setActiveMenuItem] = useState('Dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -70,7 +73,7 @@ const Dashboard = () => {
               <h1 className="dashboard-title text-black">{activeMenuItem}
               </h1>
               <p className="dashboard-subtitle">
-                Welcome back
+                Welcome back, {authUser?.fullName || 'Doctor'}
               </p>
             </div>
             

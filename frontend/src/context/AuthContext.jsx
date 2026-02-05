@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
 
       const { data } = await axios.get("/api/auth/check", {
         headers: {
-          Authorization: `Bearer ${token}` 
+          Authorization: `Bearer ${token}`
         }
       });
 
@@ -69,16 +69,16 @@ export const AuthProvider = ({ children }) => {
         email: credentials.email,
         password: credentials.password
       });
-      
+
       console.log('Login response:', response.data);
-      
+
       if (response.data.success) {
         // Set token and authUser for compatibility
         setAuthUser(response.data.userData);
         setToken(response.data.token);
         axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.token}`;
         localStorage.setItem("token", response.data.token);
-        
+
         // Transform backend user data to frontend format
         const backendUser = response.data.userData;
         const userData = {
@@ -116,7 +116,7 @@ export const AuthProvider = ({ children }) => {
             id: Date.now()
           }] : []
         };
-        
+
         console.log('Setting user data:', userData);
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
@@ -142,9 +142,9 @@ export const AuthProvider = ({ children }) => {
         phoneNo: userData.phoneNo,
         designation: userData.designation
       });
-      
+
       console.log('Register response:', response.data);
-      
+
       if (response.data.success) {
         toast.success('Registration successful! Please login to continue.');
         return { success: true, message: response.data.message || 'Registration successful' };
@@ -227,13 +227,13 @@ export const AuthProvider = ({ children }) => {
       );
 
       console.log('Profile update response:', response.data);
-      
+
       if (response.data.success) {
         const backendUpdatedUser = response.data.user;
-        
+
         // Update authUser for compatibility
         setAuthUser(backendUpdatedUser);
-        
+
         // Transform backend data to frontend format
         const updatedUser = {
           ...backendUpdatedUser,
@@ -270,7 +270,7 @@ export const AuthProvider = ({ children }) => {
             id: Date.now()
           }] : []
         };
-        
+
         setUser(updatedUser);
         localStorage.setItem('user', JSON.stringify(updatedUser));
         toast.success('Profile updated successfully!');
@@ -289,7 +289,7 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = async (formData) => {
     try {
       console.log('Sending profile update request...');
-      
+
       const token = localStorage.getItem("token");
       const config = {
         headers: {
@@ -303,24 +303,37 @@ export const AuthProvider = ({ children }) => {
         console.log(`${key}:`, value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
       }
 
-      const { data } = await axios.put("/api/auth/update-profile", formData, config);
-      
+      const { data } = await axios.put(
+        `${backendUrl}/api/auth/update-profile`,
+        formData,
+        config
+      );
+
+
       console.log('Response data:', data);
-      
+
       if (data?.success && data?.user) {
+        const updatedUser = {
+          ...data.user,
+          token: token,
+          phone: data.user.phoneNo || '',
+          professionalSummary: data.user.bio || '',
+          profileImage: data.user.profilepic || null,
+          professionalTitle: data.user.profile?.professionalHeadline || '',
+          keySkills: data.user.profile?.skills || [],
+          workingHospital: data.user.profile?.experience?.hospital || '',
+          yearsOfExperience: data.user.profile?.experience?.duration || '',
+          interests: data.user.profile?.professionalInterests || [],
+          achievements: data.user.profile?.achievements || []
+        };
+
+        setAuthUser(updatedUser);        //  updates profile page
+        setUser(updatedUser);            //  updates dashboard
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+
         toast.success("Profile Updated successfully");
-        setAuthUser(data.user);
-        
-        // If profile image was updated, update the user's profileImageUrl
-        if (data.user.profilepic || data.user.profileImageUrl) {
-          console.log('Updating profile image URL...');
-          setAuthUser(prev => ({
-            ...prev,
-            profilepic: data.user.profilepic || data.user.profileImageUrl,
-            profileImageUrl: data.user.profilepic || data.user.profileImageUrl
-          }));
-        }
-      } else {
+      }
+      else {
         toast.error(data.message || "Profile update failed");
       }
     } catch (error) {

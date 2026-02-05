@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 const userSchema = new mongoose.Schema({
     email: {
         type: String,
+        type: String,
         required: true,
         unique: true
     },
@@ -23,6 +24,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: ""
     },
+    phoneNo: {
     phoneNo: {
         type: String,
         required: true,
@@ -83,8 +85,10 @@ const userSchema = new mongoose.Schema({
     //otp for reset password
     resetOtp: Number,
 
+
     otpExpire: Date,
 
+}, { timestamps: true })
 }, { timestamps: true })
 
 const user = mongoose.model("User", userSchema);

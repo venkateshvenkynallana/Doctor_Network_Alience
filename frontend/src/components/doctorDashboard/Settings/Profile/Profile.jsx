@@ -8,10 +8,10 @@ import { AuthContext } from '../../../../context/AuthContext';
 
 
 
-const Profile = ({ onMenuClick }) =>  {
+const Profile = ({ onMenuClick }) => {
 
-  
-  const {updateProfile, authUser} = useContext(AuthContext);
+
+  const { updateProfile, authUser } = useContext(AuthContext);
 
 
 
@@ -41,13 +41,11 @@ const Profile = ({ onMenuClick }) =>  {
 
     achievements: [],
 
-    awardImages: [],
 
     videos: [],
 
-    files: [],
+    mediaImages: [],
 
-    interests: [],
 
   });
 
@@ -107,7 +105,7 @@ const Profile = ({ onMenuClick }) =>  {
           name: authUser.profile.achievements.achievementsName || '',
           organization: authUser.profile.achievements.issuingOrganization || ''
         }] : [],
-        interests: authUser.profile?.Interests || [],
+        // interests: authUser.profile?.Interests || [],
         videos: authUser.profile?.mediaUpload ? authUser.profile.mediaUpload.map(video => ({
           id: video._id || Date.now(),
           url: video.Link || video.Video || ''
@@ -319,30 +317,14 @@ const Profile = ({ onMenuClick }) =>  {
 
 
   const handleAwardImagesUpload = (e) => {
-
     const files = Array.from(e.target.files);
 
-    files.forEach(file => {
-
-      const reader = new FileReader();
-
-      reader.onloadend = () => {
-
-        setProfileData(prev => ({
-
-          ...prev,
-
-          awardImages: [...prev.awardImages, reader.result]
-
-        }));
-
-      };
-
-      reader.readAsDataURL(file);
-
-    });
-
+    setProfileData(prev => ({
+      ...prev,
+      mediaImages: [...prev.mediaImages, ...files]
+    }));
   };
+
 
 
 
@@ -352,8 +334,7 @@ const Profile = ({ onMenuClick }) =>  {
 
       ...prev,
 
-      awardImages: prev.awardImages.filter((_, i) => i !== index)
-
+      mediaImages: prev.mediaImages.filter((_, i) => i !== index)
     }));
 
   };
@@ -406,79 +387,39 @@ const Profile = ({ onMenuClick }) =>  {
 
 
 
-  const handleFilesUpload = (e) => {
 
-    const files = Array.from(e.target.files);
 
-    files.forEach(file => {
+  // const addInterest = () => {
 
-      const reader = new FileReader();
+  //   if (newInterest.trim()) {
 
-      reader.onloadend = () => {
+  //     setProfileData(prev => ({
 
-        setProfileData(prev => ({
+  //       ...prev,
 
-          ...prev,
+  //       interests: [...prev.interests, newInterest.trim()]
 
-          files: [...prev.files, { name: file.name, data: reader.result }]
+  //     }));
 
-        }));
+  //     setNewInterest('');
 
-      };
+  //   }
 
-      reader.readAsDataURL(file);
-
-    });
-
-  };
+  // };
 
 
 
-  const removeFile = (index) => {
+  // const removeInterest = (index) => {
 
-    setProfileData(prev => ({
+  //   setProfileData(prev => ({
 
-      ...prev,
+  //     ...prev,
 
-      files: prev.files.filter((_, i) => i !== index)
+  //     interests: prev.interests.filter((_, i) => i !== index)
 
-    }));
+  //   }));
 
-  };
-
-
-
-  const addInterest = () => {
-
-    if (newInterest.trim()) {
-
-      setProfileData(prev => ({
-
-        ...prev,
-
-        interests: [...prev.interests, newInterest.trim()]
-
-      }));
-
-      setNewInterest('');
-
-    }
-
-  };
-
-
-
-  const removeInterest = (index) => {
-
-    setProfileData(prev => ({
-
-      ...prev,
-
-      interests: prev.interests.filter((_, i) => i !== index)
-
-    }));
-
-  };
+  // };
 
 
 
@@ -500,7 +441,7 @@ const Profile = ({ onMenuClick }) =>  {
 
     const newErrors = {};
 
-    
+
 
     if (!profileData.fullName.trim()) {
 
@@ -508,7 +449,7 @@ const Profile = ({ onMenuClick }) =>  {
 
     }
 
-    
+
 
     if (!profileData.email.trim()) {
 
@@ -520,7 +461,7 @@ const Profile = ({ onMenuClick }) =>  {
 
     }
 
-    
+
 
     if (!profileData.phone.trim()) {
 
@@ -532,7 +473,7 @@ const Profile = ({ onMenuClick }) =>  {
 
     }
 
-    
+
 
     if (!profileData.designation.trim()) {
 
@@ -540,7 +481,7 @@ const Profile = ({ onMenuClick }) =>  {
 
     }
 
-    
+
 
     if (!profileData.hospitalName.trim()) {
 
@@ -548,7 +489,7 @@ const Profile = ({ onMenuClick }) =>  {
 
     }
 
-    
+
 
     if (profileData.totalExperience && (isNaN(profileData.totalExperience) || profileData.totalExperience < 0)) {
 
@@ -556,7 +497,7 @@ const Profile = ({ onMenuClick }) =>  {
 
     }
 
-    
+
 
     setErrors(newErrors);
 
@@ -568,77 +509,88 @@ const Profile = ({ onMenuClick }) =>  {
 
   const handleSubmit = async (e) => {
 
-  e.preventDefault();
+    e.preventDefault();
 
 
 
-  console.log("🚀 Save Profile clicked");
+    console.log("🚀 Save Profile clicked");
 
 
 
-  if (!validateForm()) {
+    if (!validateForm()) {
 
-    console.log(" Validation failed");
+      console.log(" Validation failed");
 
-    return;
+      return;
 
-  }
-
-
-
-  const formData = new FormData();
+    }
 
 
 
-  // Basic info
-
-  formData.append("fullName", profileData.fullName);
-
-  formData.append("email", profileData.email);
-
-  formData.append("phoneNo", profileData.phone);
-
-  formData.append("bio", profileData.bio);
-
-  formData.append("designation", profileData.designation);
-
-  formData.append("yearsOfExperience", profileData.totalExperience);
-
-  formData.append("introVideo", profileData.introVideo);
+    const formData = new FormData();
 
 
 
-  // Profile image
+    // Basic info
 
-  if (fileInputRef.current?.files[0]) {
+    formData.append("fullName", profileData.fullName);
 
-    formData.append("profilepic", fileInputRef.current.files[0]);
+    formData.append("email", profileData.email);
 
-  }
+    formData.append("phoneNo", profileData.phone);
 
+    formData.append("bio", profileData.bio);
 
+    formData.append("designation", profileData.designation);
 
-  // Complex data → stringify
+    formData.append("yearsOfExperience", profileData.totalExperience);
 
-  formData.append("experience", JSON.stringify(profileData.workExperience));
-
-  formData.append("education", JSON.stringify(profileData.education));
-
-  formData.append("achievements", JSON.stringify(profileData.achievements));
-
-  formData.append("interests", JSON.stringify(profileData.interests));
-
-  formData.append("videos", JSON.stringify(profileData.videos));
+    formData.append("introVideo", profileData.introVideo);
 
 
+    // Profile image
 
-  console.log("FormData built, calling AuthContext");
+    if (fileInputRef.current?.files[0]) {
+
+      formData.append("profilepic", fileInputRef.current.files[0]);
+
+    }
 
 
 
-  await updateProfile(formData);
+    // Complex data → stringify
 
-};
+    formData.append("experience", JSON.stringify(profileData.workExperience));
+
+    formData.append("education", JSON.stringify(profileData.education));
+
+    formData.append("achievements", JSON.stringify(profileData.achievements));
+
+    // videos
+    profileData.videos.forEach(video => {
+      formData.append("mediaUpload", JSON.stringify({
+        type: "video",
+        url: video.url
+      }));
+    });
+
+    // gallery images
+    profileData.mediaImages.forEach(file => {
+      formData.append("mediaUploadImages", file);
+    });
+
+
+
+
+
+
+    console.log("FormData built, calling AuthContext");
+
+
+
+    await updateProfile(formData);
+
+  };
 
 
 
@@ -678,7 +630,7 @@ const Profile = ({ onMenuClick }) =>  {
 
             )}
 
-            <button 
+            <button
 
               className="profile-image-upload-btn"
 
@@ -964,7 +916,7 @@ const Profile = ({ onMenuClick }) =>  {
 
                 <h4>Experience Entry</h4>
 
-                <button 
+                <button
 
                   className="remove-btn"
 
@@ -1078,7 +1030,7 @@ const Profile = ({ onMenuClick }) =>  {
 
                 <h4>Education Entry</h4>
 
-                <button 
+                <button
 
                   className="remove-btn"
 
@@ -1192,7 +1144,7 @@ const Profile = ({ onMenuClick }) =>  {
 
                 <h4>Award Entry</h4>
 
-                <button 
+                <button
 
                   className="remove-btn"
 
@@ -1260,69 +1212,8 @@ const Profile = ({ onMenuClick }) =>  {
 
         </button>
 
-        
 
-        <div className="award-images-section">
 
-          <h4>Award Images</h4>
-
-          <button 
-
-            className="upload-btn"
-
-            onClick={() => awardImagesRef.current?.click()}
-
-          >
-
-            <Upload size={16} />
-
-            Upload Award Images
-
-          </button>
-
-          <input
-
-            ref={awardImagesRef}
-
-            type="file"
-
-            accept="image/*"
-
-            multiple
-
-            onChange={handleAwardImagesUpload}
-
-            className="hidden"
-
-          />
-
-          <div className="image-gallery">
-
-            {profileData.awardImages.map((img, index) => (
-
-              <div key={index} className="image-item">
-
-                <img src={img} alt={`Award ${index + 1}`} />
-
-                <button 
-
-                  className="image-remove-btn"
-
-                  onClick={() => removeAwardImage(index)}
-
-                >
-
-                  <X size={16} />
-
-                </button>
-
-              </div>
-
-            ))}
-
-          </div>
-
-        </div>
 
       </div>
 
@@ -1338,7 +1229,7 @@ const Profile = ({ onMenuClick }) =>  {
 
         </h3>
 
-        
+
 
         <div className="videos-section">
 
@@ -1360,7 +1251,7 @@ const Profile = ({ onMenuClick }) =>  {
 
               />
 
-              <button 
+              <button
 
                 className="remove-btn"
 
@@ -1388,65 +1279,57 @@ const Profile = ({ onMenuClick }) =>  {
 
 
 
-        <div className="files-section">
+        <div className="award-images-section">
 
-          <h4>Files</h4>
+          <h4>Gallery</h4>
 
-          <button 
+          <button
 
             className="upload-btn"
 
-            onClick={() => filesRef.current?.click()}
+            onClick={() => awardImagesRef.current?.click()}
 
           >
 
             <Upload size={16} />
 
-            Upload Files (PDF, Certificates)
+            Upload Gallery Images
 
           </button>
 
           <input
 
-            ref={filesRef}
+            ref={awardImagesRef}
 
             type="file"
 
-            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+            accept="image/*"
 
             multiple
 
-            onChange={handleFilesUpload}
+            onChange={handleAwardImagesUpload}
 
             className="hidden"
 
           />
 
-          <div className="files-list">
+          <div className="image-gallery">
 
-            {profileData.files.map((file, index) => (
-
-              <div key={index} className="file-item">
-
-                <FileText size={16} />
-
-                <span>{file.name}</span>
-
-                <button 
-
-                  className="remove-btn"
-
-                  onClick={() => removeFile(index)}
-
+            {profileData.mediaImages.map((file, index) => (
+              <div key={index} className="image-item">
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt={`Gallery ${index + 1}`}
+                />
+                <button
+                  className="image-remove-btn"
+                  onClick={() => removeMediaImage(index)}
                 >
-
                   <X size={16} />
-
                 </button>
-
               </div>
-
             ))}
+
 
           </div>
 
@@ -1456,61 +1339,7 @@ const Profile = ({ onMenuClick }) =>  {
 
 
 
-      <div className="card">
 
-        <h3 className="section-title">
-
-          <Star size={20} />
-
-          Interests
-
-        </h3>
-
-        <div className="interests-input">
-
-          <input
-
-            type="text"
-
-            value={newInterest}
-
-            onChange={(e) => setNewInterest(e.target.value)}
-
-            onKeyPress={handleInterestKeyPress}
-
-            placeholder="Add an interest (e.g., Cardiology, Research)"
-
-          />
-
-          <button onClick={addInterest}>
-
-            <Plus size={16} />
-
-          </button>
-
-        </div>
-
-        <div className="interests-chips">
-
-          {profileData.interests.map((interest, index) => (
-
-            <div key={index} className="interest-chip">
-
-              <span>{interest}</span>
-
-              <button onClick={() => removeInterest(index)}>
-
-                <X size={14} />
-
-              </button>
-
-            </div>
-
-          ))}
-
-        </div>
-
-      </div>
 
 
 
@@ -1526,7 +1355,7 @@ const Profile = ({ onMenuClick }) =>  {
 
       <div className="save-section">
 
-        <button 
+        <button
 
           className="save-btn"
 
@@ -1540,7 +1369,7 @@ const Profile = ({ onMenuClick }) =>  {
 
         </button>
 
-        <button 
+        <button
 
           className="view-profile-btn"
 

@@ -7,10 +7,13 @@ import transporter from "../lib/mailer.js";
 
 //Sign up form
 export const signUp = async (req, res) => {
+export const signUp = async (req, res) => {
 
+    const { fullName, email, password, bio, phoneNo, designation } = req.body;
     const { fullName, email, password, bio, phoneNo, designation } = req.body;
 
     try {
+        if (!fullName || !email || !password || !phoneNo || !designation) {
         if (!fullName || !email || !password || !phoneNo || !designation) {
             return res.status(400).json({ message: "fields are missing." });
         }
@@ -31,6 +34,8 @@ export const signUp = async (req, res) => {
             email,
             password: hashedPassword,
             bio,
+            phoneNo,
+            designation,
             phoneNo,
             designation,
         });
@@ -223,7 +228,12 @@ export const updateProfile = async (req, res) => {
     } catch (error) {
         console.error("update profile error", error);
         res.status(500).json({ message: error.message });
+        console.error("update profile error", error);
+        res.status(500).json({ message: error.message });
     }
+};
+
+
 };
 
 
@@ -243,6 +253,7 @@ export const forgotPassword = async (req, res) => {
         const otp = Math.floor(100000 + Math.random() * 900000);
 
         user.resetOtp = otp;
+        user.otpExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
         user.otpExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
 
         await user.save();

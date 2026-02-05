@@ -16,7 +16,7 @@ const ViewProfile = ({ onMenuClick }) => {
 
   // Real profile data from authUser
   const profileData = {
-    profileImage: authUser?.profilepic || '',
+    profileImage: authUser?.profilepic || 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&h=400&fit=crop&crop=face',
     fullName: authUser?.fullName || 'Dr. Name',
     designation: authUser?.designation || 'Doctor',
     hospitalName: authUser?.profile?.experience?.[0]?.hospital || 'Hospital Name',
@@ -190,12 +190,45 @@ const ViewProfile = ({ onMenuClick }) => {
 
       {/* Main Content */}
       <main className="main-content">
+        {/* Profile Actions - Top Right */}
+        <div className="profile-actions-top-right">
+          <button className="edit-profile-button" onClick={handleEditProfile}>
+            <Edit size={20} />
+            <span>Edit Profile</span>
+          </button>
+          <button className={`like-button ${isLiked ? 'liked' : ''}`} onClick={handleLike}>
+            <ThumbsUp size={20} />
+            <span>{likeCount}</span>
+          </button>
+          <div className="share-container">
+            <button className="share-button" onClick={() => setShowShareMenu(!showShareMenu)}>
+              <Share2 size={20} />
+              <span>{shareCount}</span>
+            </button>
+            {showShareMenu && (
+              <div className="share-dropdown">
+                <button onClick={() => handleShare('linkedin')}>
+                  <Linkedin size={16} />
+                  LinkedIn
+                </button>
+                <button onClick={() => handleShare('twitter')}>
+                  <Twitter size={16} />
+                  Twitter
+                </button>
+                <button onClick={copyProfileLink}>
+                  <Globe size={16} />
+                  Copy Link
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
         {/* Overview Section */}
         <section id="overview" className="content-section">
           <div className="section-header">
-            <div className="profile-header-row ">
-              <div className="sidebar-header ">
-                <div className="profile-image-container ">
+            <div className="profile-header-row">
+              <div className="sidebar-header">
+                <div className="profile-image-container">
                   {profileData.profileImage ? (
                     <img src={profileData.profileImage} alt="Profile" className="profile-image" />
                   ) : (
@@ -224,7 +257,7 @@ const ViewProfile = ({ onMenuClick }) => {
                         allowFullScreen
                         className="video-iframe"
                       />
-                    ) : (
+                    ) : ( 
                       <video controls className="video-element">
                         <source src={profileData.introVideo} type="video/mp4" />
                         Your browser does not support the video tag.
@@ -236,53 +269,7 @@ const ViewProfile = ({ onMenuClick }) => {
             </div>
           </div>
 
-          {/* Profile Actions */}
-          <div className="profile-actions">
-            <div className="action-buttons">
-              <button className="edit-profile-button" onClick={handleEditProfile}>
-                <Edit size={20} />
-                <span>Edit Profile</span>
-              </button>
-              <button className={`like-button ${isLiked ? 'liked' : ''}`} onClick={handleLike}>
-                <ThumbsUp size={20} />
-                <span>{likeCount}</span>
-              </button>
-              <div className="share-container">
-                <button className="share-button" onClick={() => setShowShareMenu(!showShareMenu)}>
-                  <Share2 size={20} />
-                  <span>{shareCount}</span>
-                </button>
-                {showShareMenu && (
-                  <div className="share-dropdown">
-                    <button onClick={() => handleShare('linkedin')}>
-                      <Linkedin size={16} />
-                      LinkedIn
-                    </button>
-                    <button onClick={() => handleShare('twitter')}>
-                      <Twitter size={16} />
-                      Twitter
-                    </button>
-                    <button onClick={copyProfileLink}>
-                      <Globe size={16} />
-                      Copy Link
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="social-links">
-              <a href={profileData.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="social-link">
-                <Linkedin size={20} />
-              </a>
-              <a href={profileData.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="social-link">
-                <Twitter size={20} />
-              </a>
-              <a href={profileData.socialLinks.website} target="_blank" rel="noopener noreferrer" className="social-link">
-                <Globe size={20} />
-              </a>
-            </div>
-          </div>
-
+          
           <div className="overview-grid">
             <div className="overview-card">
               <div className="card-icon">
@@ -332,18 +319,6 @@ const ViewProfile = ({ onMenuClick }) => {
             <User size={32} />
             <h2 className="section-title">About</h2>
           </div>
-
-          {/* Tab Navigation */}
-          <div className="tab-navigation">
-            <button
-              className={`tab-button ${activeTab === 'about' ? 'active' : ''}`}
-              onClick={() => setActiveTab('about')}
-            >
-              Biography
-            </button>
-            
-          </div>
-
           <div className="tab-content">
             {activeTab === 'about' && (
               <div className="about-content">
