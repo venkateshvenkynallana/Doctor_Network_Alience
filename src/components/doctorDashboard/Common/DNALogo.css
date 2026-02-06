@@ -1,0 +1,37 @@
+.dna-logo-image {
+  transition: all 0.3s ease;
+  border-radius: 8px;
+}
+
+.dna-logo-image:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 4px 8px rgba(59, 130, 246, 0.3));
+}
+
+.dna-logo-small {
+  width: 24px;
+  height: 24px;
+}
+
+.dna-logo-medium {
+  width: 40px;
+  height: 40px;
+}
+
+.dna-logo-large {
+  width: 64px;
+  height: 64px;
+}
+
+.dna-logo-animated {
+  animation: logoPulse 2s ease-in-out infinite;
+}
+
+@keyframes logoPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
