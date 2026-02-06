@@ -83,7 +83,7 @@ const ProfileIcon = ({ onMenuClick }) => {
             className="profile-dropdown-item"
           >
             <Edit className="profile-dropdown-item-icon" />
-            <span>Edit Profile</span>
+            <span>View Profile</span>
           </button>
           
                  

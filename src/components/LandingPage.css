@@ -81,14 +81,19 @@
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(220, 38, 38, 0.4);
 }
+main.landing-container {
+    background: linear-gradient(35deg, #ff0000 0%, #000000 100%);
+    top: 21px;
+}
 
 /* Main Content */
-.main-content {
+.landing-main-content {
     margin-top: 80px;
     padding: 40px 20px;
-    max-width: 1200px;
+    max-width: 70%;
     margin-left: auto;
     margin-right: auto;
+    /* background: linear-gradient(45deg, #ff0000, #000000); */
 }
 
 .hero-section {
@@ -114,6 +119,7 @@
     color: #666;
     margin-bottom: 30px;
     line-height: 1.6;
+    padding: 5px;
 }
 
 /* Overview Section */

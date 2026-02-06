@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { User, Briefcase, GraduationCap, Award, Video, Image, Heart, Home, Mail, Phone, MapPin, Calendar, Download, Play, FileText, X, ChevronRight, ArrowLeft, Clock, Star, ThumbsUp, MessageCircle, Share2, Linkedin, Twitter, Globe, CheckCircle, Users, TrendingUp, BookOpen, Target, Award as Trophy, Edit } from 'lucide-react';
+import { User, Briefcase, GraduationCap, Award, Video, Image, Home, Mail, Phone, MapPin, Calendar, Download, Play, FileText, X, ChevronRight, ArrowLeft, Clock, ThumbsUp, MessageCircle, Share2, Linkedin, Twitter, Globe, CheckCircle, Users, TrendingUp, BookOpen, Target, Award as Trophy, Edit } from 'lucide-react';
 import './ViewProfile.css';
 import { AuthContext } from '../../../../context/AuthContext';
 
@@ -12,11 +12,13 @@ const ViewProfile = ({ onMenuClick }) => {
   const [shareCount, setShareCount] = useState(89);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [activeTab, setActiveTab] = useState('about');
+  const [isManualScroll, setIsManualScroll] = useState(false);
   const sidebarRef = useRef(null);
+  const [ profileImage, setProfileImage] = useState('');
 
   // Real profile data from authUser
   const profileData = {
-    profileImage: authUser?.profilepic || '',
+    profileImage: authUser?.profilepic || 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&h=400&fit=crop&crop=face',
     fullName: authUser?.fullName || 'Dr. Name',
     designation: authUser?.designation || 'Doctor',
     hospitalName: authUser?.profile?.experience?.[0]?.hospital || 'Hospital Name',
@@ -43,18 +45,26 @@ const ViewProfile = ({ onMenuClick }) => {
       organization: authUser.profile.achievements.issuingOrganization || '',
       image: authUser.profile.achievements.achievementsImages || ''
     }] : [],
-    videos: authUser?.profile?.mediaUpload ? authUser.profile.mediaUpload.map(video => ({
-      id: video._id || Date.now(),
-      title: 'Video Content',
-      url: video.Link || video.Video || ''
-    })) : [],
+    videos: authUser?.profile?.mediaUpload
+      ? authUser.profile.mediaUpload
+        .filter(item => item.type === "video")
+        .map(video => ({
+          id: video._id,
+          title: "Video Content",
+          url: video.url
+        }))
+      : [],
+
     files: [], // Files are not stored in backend
-    gallery: authUser?.profile?.achievements?.achievementsImages ? [{
-      id: Date.now(),
-      url: authUser.profile.achievements.achievementsImages,
-      caption: 'Achievement Image'
-    }] : [],
-    interests: authUser?.profile?.Interests || [],
+    gallery: authUser?.profile?.mediaUpload
+      ? authUser.profile.mediaUpload
+        .filter(item => item.type === "image")
+        .map(img => ({
+          id: img._id,
+          url: img.url,
+          caption: "Gallery Image"
+        }))
+      : [],
     // Enhanced profile data with defaults
     stats: {
       patientsTreated: 0,
@@ -92,12 +102,20 @@ const ViewProfile = ({ onMenuClick }) => {
     { id: 'education', label: 'Education', icon: GraduationCap },
     { id: 'achievements', label: 'Achievements', icon: Award },
     { id: 'videos', label: 'Videos', icon: Video },
-    { id: 'gallery', label: 'Gallery', icon: Image },
-    { id: 'interests', label: 'Interests', icon: Heart }
+    { id: 'gallery', label: 'Gallery', icon: Image }
   ];
 
   useEffect(() => {
+  if (authUser?.profilepic) {
+    // cache-busting so browser loads new image
+    setProfileImage(`${authUser.profilepic}?t=${Date.now()}`);
+  }
+}, [authUser?.profilepic]);
+
+  useEffect(() => {
     const handleScroll = () => {
+      if (isManualScroll) return; // Don't interfere with manual scrolling
+
       const sections = navigationItems.map(item => item.id);
       const scrollPosition = window.scrollY + 100;
 
@@ -115,13 +133,19 @@ const ViewProfile = ({ onMenuClick }) => {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isManualScroll]);
 
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId);
     if (element) {
+      setIsManualScroll(true); // Prevent scroll handler from interfering
       element.scrollIntoView({ behavior: 'smooth' });
       setActiveSection(sectionId);
+
+      // Re-enable scroll handler after a delay
+      setTimeout(() => {
+        setIsManualScroll(false);
+      }, 1000); // Give enough time for smooth scroll to complete
     }
   };
 
@@ -190,14 +214,48 @@ const ViewProfile = ({ onMenuClick }) => {
 
       {/* Main Content */}
       <main className="main-content">
+        {/* Profile Actions - Top Right */}
+        <div className="profile-actions-top-right">
+          <button className="edit-profile-button" onClick={handleEditProfile}>
+            <Edit size={20} />
+            <span>Edit Profile</span>
+          </button>
+          <button className={`like-button ${isLiked ? 'liked' : ''}`} onClick={handleLike}>
+            <ThumbsUp size={20} />
+            <span>{likeCount}</span>
+          </button>
+          <div className="share-container">
+            <button className="share-button" onClick={() => setShowShareMenu(!showShareMenu)}>
+              <Share2 size={20} />
+              <span>{shareCount}</span>
+            </button>
+            {showShareMenu && (
+              <div className="share-dropdown">
+                <button onClick={() => handleShare('linkedin')}>
+                  <Linkedin size={16} />
+                  LinkedIn
+                </button>
+                <button onClick={() => handleShare('twitter')}>
+                  <Twitter size={16} />
+                  Twitter
+                </button>
+                <button onClick={copyProfileLink}>
+                  <Globe size={16} />
+                  Copy Link
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
         {/* Overview Section */}
         <section id="overview" className="content-section">
           <div className="section-header">
             <div className="profile-header-row">
               <div className="sidebar-header">
                 <div className="profile-image-container">
-                  {profileData.profileImage ? (
-                    <img src={profileData.profileImage} alt="Profile" className="profile-image" />
+                  {profileImage ? (
+                    <img src={profileImage} 
+                    alt="Profile" className="profile-image" />
                   ) : (
                     <div className="profile-image-placeholder">
                       <User size={64} />
@@ -205,15 +263,15 @@ const ViewProfile = ({ onMenuClick }) => {
                   )}
                 </div>
                 <div className="profile-text-info">
-                  <h2 className="doctor-name">{profileData.fullName}</h2>
-                  <p className="doctor-designation">{profileData.designation}</p>
+                  <h2 className="doctor-view-name">{profileData.fullName}</h2>
+                  <p className="doctor-view-designation">{profileData.designation}</p>
                 </div>
               </div>
-              
+
               {/* Intro Video */}
               {profileData.introVideo && (
                 <div className="intro-video-container">
-                 
+
                   <div className="video-player">
                     {profileData.introVideo.includes('youtube.com') || profileData.introVideo.includes('youtu.be') ? (
                       <iframe
@@ -236,52 +294,6 @@ const ViewProfile = ({ onMenuClick }) => {
             </div>
           </div>
 
-          {/* Profile Actions */}
-          <div className="profile-actions">
-            <div className="action-buttons">
-              <button className="edit-profile-button" onClick={handleEditProfile}>
-                <Edit size={20} />
-                <span>Edit Profile</span>
-              </button>
-              <button className={`like-button ${isLiked ? 'liked' : ''}`} onClick={handleLike}>
-                <ThumbsUp size={20} />
-                <span>{likeCount}</span>
-              </button>
-              <div className="share-container">
-                <button className="share-button" onClick={() => setShowShareMenu(!showShareMenu)}>
-                  <Share2 size={20} />
-                  <span>{shareCount}</span>
-                </button>
-                {showShareMenu && (
-                  <div className="share-dropdown">
-                    <button onClick={() => handleShare('linkedin')}>
-                      <Linkedin size={16} />
-                      LinkedIn
-                    </button>
-                    <button onClick={() => handleShare('twitter')}>
-                      <Twitter size={16} />
-                      Twitter
-                    </button>
-                    <button onClick={copyProfileLink}>
-                      <Globe size={16} />
-                      Copy Link
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="social-links">
-              <a href={profileData.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="social-link">
-                <Linkedin size={20} />
-              </a>
-              <a href={profileData.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="social-link">
-                <Twitter size={20} />
-              </a>
-              <a href={profileData.socialLinks.website} target="_blank" rel="noopener noreferrer" className="social-link">
-                <Globe size={20} />
-              </a>
-            </div>
-          </div>
 
           <div className="overview-grid">
             <div className="overview-card">
@@ -333,16 +345,6 @@ const ViewProfile = ({ onMenuClick }) => {
             <h2 className="section-title">About</h2>
           </div>
 
-          {/* Tab Navigation */}
-          <div className="tab-navigation">
-            <button
-              className={`tab-button ${activeTab === 'about' ? 'active' : ''}`}
-              onClick={() => setActiveTab('about')}
-            >
-              Biography
-            </button>
-            
-          </div>
 
           <div className="tab-content">
             {activeTab === 'about' && (
@@ -389,10 +391,9 @@ const ViewProfile = ({ onMenuClick }) => {
             <Briefcase size={32} />
             <h2 className="section-title">Experience</h2>
           </div>
-          <div className="timeline">
+          <div className="">
             {profileData.workExperience.map((exp, index) => (
               <div key={exp.id} className="timeline-item">
-                <div className="timeline-marker"></div>
                 <div className="timeline-content">
                   <div className="timeline-header">
                     <h3>{exp.role}</h3>
@@ -457,22 +458,32 @@ const ViewProfile = ({ onMenuClick }) => {
             <h2 className="section-title">Videos & Media</h2>
           </div>
           <div className="videos-grid">
-            {profileData.videos.map((video) => (
-              <div key={video.id} className="video-card">
-                <div className="video-thumbnail">
-                  <Play size={32} />
-                </div>
-                <div className="video-content">
-                  <h3>{video.title}</h3>
-                  <a href={video.url} target="_blank" rel="noopener noreferrer" className="video-link">
-                    Watch Video
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
+            {profileData.videos.map((video) => {
+              const youtubeId = getYouTubeVideoId(video.url);
 
-          
+              return (
+                <div key={video.id} className="video-card">
+                  <div className="video-player-container">
+                    {youtubeId ? (
+                      <iframe
+                        src={`https://www.youtube.com/embed/${youtubeId}`}
+                        title="Profile Video"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="video-iframe-container"
+                      />
+                    ) : (
+                      <video controls className="video-element-container">
+                        <source src={video.url} type="video/mp4" />
+                        Your browser does not support the video tag.
+                      </video>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </section>
 
         {/* Gallery Section */}
@@ -484,28 +495,14 @@ const ViewProfile = ({ onMenuClick }) => {
           <div className="gallery-grid">
             {profileData.gallery.map((item, index) => (
               <div key={item.id} className="gallery-item" onClick={() => openLightbox(item)}>
-                <div className="gallery-image-placeholder">
-                  <Image size={32} />
-                </div>
+                <img
+                  src={item.url}
+                  alt={item.caption}
+                  className="gallery-image"
+                />
                 <div className="gallery-overlay">
                   <p>{item.caption}</p>
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Interests Section */}
-        <section id="interests" className="content-section">
-          <div className="section-header">
-            <Heart size={32} />
-            <h2 className="section-title">Interests</h2>
-          </div>
-          <div className="interests-container">
-            {profileData.interests.map((interest, index) => (
-              <div key={index} className="interest-chip">
-                <Heart size={14} />
-                <span>{interest}</span>
               </div>
             ))}
           </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import './DNALogo.css';
-import logoImage from '../../../assets/DNA logo copy.jpg.jpeg';
+import logoImage from '../../../assets/DNA logo copy.jpg-Photoroom.png';
 
 const DNALogo = ({ size = 40, className = "" }) => {
   return (

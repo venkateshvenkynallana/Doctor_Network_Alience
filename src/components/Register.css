@@ -38,6 +38,12 @@
     margin: 0;
     font-size: 1.5em;
 }
+h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #ffffff;
+}
 
 .close-btn {
     background: rgba(220, 38, 38, 0.1);

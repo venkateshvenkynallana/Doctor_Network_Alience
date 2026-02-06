@@ -104,7 +104,7 @@ const Register = ({ onClose, onLogin, onLoginSuccess }) => {
     return (
         <div className="popup-overlay">
             <div className="popup-form">
-                <div className="popup-header">
+                <div className="popup-header register-header">
                     <h2>Register with Doctors Alliance Network</h2>
                     <button className="close-btn" onClick={handleCloseForm}>×</button>
                 </div>

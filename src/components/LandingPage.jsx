@@ -1,5 +1,5 @@
 import React from 'react';
-import DNA_logo_copy from '../assets/DNA logo copy.jpg.jpeg';
+import DNA_logo_copy from '../assets/DNA logo copy.jpg-Photoroom.png';
 import './LandingPage.css';
 
 const LandingPage = ({ onLogin, onRegister }) => {
@@ -67,7 +67,9 @@ const LandingPage = ({ onLogin, onRegister }) => {
             </header>
 
             {/* Main Content */}
-            <main className="main-content">
+        <main className="landing-container">
+
+            <div className="landing-main-content">
                 {/* Hero Section */}
                 <section className="hero-section">
                     <h1 className="hero-title">Transforming Healthcare Collaboration</h1>
@@ -125,7 +127,8 @@ const LandingPage = ({ onLogin, onRegister }) => {
                         ))}
                     </div>
                 </section>
-            </main>
+            </div>
+        </main>
         </div>
     );
 };

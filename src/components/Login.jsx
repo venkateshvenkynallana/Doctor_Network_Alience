@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import DNA_logo_copy from '../assets/DNA logo copy.jpg.jpeg';
+import DNA_logo_copy from '../assets/DNA logo copy.jpg-Photoroom.png';
 import './Login.css';
 
 const Login = ({ onClose, onRegister, onLoginSuccess }) => {
